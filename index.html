@@ -851,9 +851,16 @@
 
         <!-- Extended Hours -->
         <div class="cb-field-label">Extended Hours</div>
-        <div class="cb-check-row">
-          <label class="cb-check"><input type="radio" name="overtime" value="No" checked/> Standard</label>
-          <label class="cb-check"><input type="radio" name="overtime" value="Overtime"/> Overtime (+)</label>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <label class="cb-check"><input type="radio" name="overtime" value="No" checked onclick="toggleOvertimeHours(false)"/> Standard</label>
+          <label class="cb-check"><input type="radio" name="overtime" value="Overtime" onclick="toggleOvertimeHours(true)"/> Overtime (+)</label>
+          <div id="overtime-hours-wrap" style="display:none;flex:1;min-width:140px;">
+            <input class="cb-input" type="number" id="f-overtime-hours" placeholder="Extra hours (e.g. 2)" min="0.5" step="0.5" oninput="calcFinancials()" style="margin-bottom:0;"/>
+          </div>
+        </div>
+        <div id="overtime-rate-wrap" style="display:none;margin-top:6px;">
+          <div class="cb-field-label">Overtime Rate per Hour (QAR) <span style="font-weight:400;color:var(--text-xlight);">— optional, fill after job</span></div>
+          <input class="cb-input" type="number" id="f-overtime-rate" placeholder="e.g. 150" min="0" oninput="calcFinancials()"/>
         </div>
 
         <div style="border-top:1px solid var(--border);margin:14px 0 12px;"></div>
@@ -1369,20 +1376,51 @@
     calcFinancials();
   }
 
+  // ── Toggle overtime hours input ──
+  function toggleOvertimeHours(show) {
+    document.getElementById('overtime-hours-wrap').style.display = show ? 'block' : 'none';
+    document.getElementById('overtime-rate-wrap').style.display  = show ? 'block' : 'none';
+    calcFinancials();
+  }
+
+  // ── Get actual day count from selected dates ──
+  function getSelectedDayCount() {
+    const type = document.querySelector('input[name="datetype"]:checked')?.value || 'single';
+    if (type === 'single') {
+      return document.getElementById('f-date-single').value ? 1 : 1;
+    } else if (type === 'consecutive') {
+      const from = document.getElementById('f-date-from').value;
+      const to   = document.getElementById('f-date-to').value;
+      if (!from || !to) return 1;
+      const diff = (new Date(to) - new Date(from)) / (1000*60*60*24);
+      return Math.max(1, diff + 1);
+    } else {
+      return Math.max(1, randomDates.length);
+    }
+  }
+
   // ── Calc financials ──
   function calcFinancials() {
     const ptype = document.querySelector('input[name="pricetype"]:checked')?.value || 'fullday';
     let serviceTotal = 0;
     let formula = '';
 
+    // Use actual selected dates count for fullday/halfday
+    const autodays = getSelectedDayCount();
+
     if (ptype === 'fullday') {
       const rate = parseFloat(document.getElementById('f-rate-fullday').value)||0;
-      const days = parseInt(document.getElementById('f-num-fulldays').value)||1;
+      // Always sync the days field with actual selected dates count
+      const daysField = document.getElementById('f-num-fulldays');
+      daysField.value = autodays;
+      const days = autodays;
       serviceTotal = rate * days;
       formula = rate > 0 ? `QAR ${rate.toLocaleString()} × ${days} day${days!==1?'s':''} = QAR ${serviceTotal.toLocaleString()}` : '—';
     } else if (ptype === 'halfday') {
       const rate = parseFloat(document.getElementById('f-rate-halfday').value)||0;
-      const num  = parseInt(document.getElementById('f-num-halfdays').value)||1;
+      const hfField = document.getElementById('f-num-halfdays');
+      hfField.value = autodays;
+      const num  = autodays;
       serviceTotal = rate * num;
       formula = rate > 0 ? `QAR ${rate.toLocaleString()} × ${num} half day${num!==1?'s':''} = QAR ${serviceTotal.toLocaleString()}` : '—';
     } else if (ptype === 'hourly') {
@@ -1392,8 +1430,22 @@
       formula = rate > 0 ? `QAR ${rate.toLocaleString()} × ${hours} hr${hours!==1?'s':''} = QAR ${serviceTotal.toLocaleString()}` : '—';
     }
 
+    // Overtime addition
+    const isOvertime = document.querySelector('input[name="overtime"]:checked')?.value === 'Overtime';
+    let overtimeTotal = 0;
+    if (isOvertime) {
+      const otHours = parseFloat(document.getElementById('f-overtime-hours')?.value)||0;
+      const otRate  = parseFloat(document.getElementById('f-overtime-rate')?.value)||0;
+      if (otHours > 0 && otRate > 0) {
+        overtimeTotal = otHours * otRate;
+        formula += ` + OT QAR ${otRate}×${otHours}hrs`;
+      } else if (otHours > 0) {
+        formula += ` + ${otHours} OT hrs (rate TBD)`;
+      }
+    }
+
     const transport  = parseFloat(document.getElementById('f-transport').value)||0;
-    const grandTotal = serviceTotal + transport;
+    const grandTotal = serviceTotal + overtimeTotal + transport;
     const deposit    = grandTotal * 0.5;
     const balance    = grandTotal * 0.5;
 
