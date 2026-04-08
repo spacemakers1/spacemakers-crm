@@ -1546,7 +1546,6 @@
     const area        = document.getElementById('f-area').value.trim();
     const maps        = document.getElementById('f-maps').value.trim();
     const housenumber = document.getElementById('f-housenumber').value.trim();
-    const transport   = parseFloat(document.getElementById('f-transport').value)||0;
     const svcType     = document.querySelector('input[name="svctype"]:checked')?.value || 'Service Day';
     const duration    = document.querySelector('input[name="duration"]:checked')?.value || 'Full Day';
     const lang        = document.querySelector('input[name="lang"]:checked')?.value || 'English';
@@ -1568,9 +1567,10 @@
     const reminders = REMINDER_LABELS.map(() => ({ sent: false }));
 
     const newClient = {
-      id: Date.now(), // unique ID
+      id: Date.now(),
       name, initials, phone, area, maps, housenumber,
-      svcType, duration, dates, transport,
+      svcType, duration, dates,
+      priceLines: JSON.parse(JSON.stringify(priceLines)),
       price: grandTotal,
       deposit: grandTotal * 0.5,
       balance: grandTotal * 0.5,
@@ -1596,9 +1596,8 @@
   }
 
   function clearForm() {
-    ['f-name','f-phone','f-area','f-maps','f-housenumber','f-rate-fullday','f-num-fulldays','f-rate-halfday','f-num-halfdays',
-     'f-num-days','f-rate-hour','f-num-hours','f-transport','f-deposit','f-balance','f-notes',
-     'f-date-single','f-date-from','f-date-to'].forEach(id => {
+    ['f-name','f-phone','f-area','f-maps','f-housenumber','f-deposit','f-balance','f-notes',
+     'f-date-single','f-date-from','f-date-to','f-overtime-hours','f-overtime-rate'].forEach(id => {
       const el = document.getElementById(id); if (el) el.value='';
     });
     document.getElementById('f-deposit-received').checked = false;
