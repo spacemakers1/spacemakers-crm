@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Space Makers — Business Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --pink: #c9768a;
+    --pink-light: #e8b4bf;
+    --pink-pale: #f5e6e9;
+    --pink-dark: #a85570;
+    --cream: #faf7f4;
+    --cream-dark: #f0ebe4;
+    --dark: #1a1a1a;
+    --dark2: #2c2c2c;
+    --text: #333;
+    --text-light: #777;
+    --text-xlight: #aaa;
+    --border: #e8e0d8;
+    --white: #ffffff;
+    --green: #5a9e6f;
+    --orange: #d4845a;
+    --blue: #5a7eb5;
+    --sidebar-width: 200px;
+  }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo .est { font-size: 10px; color: var(--text-xlight); letter-spacing: 2px; text-transform: uppercase; font-weight: 500; }
+  .sidebar-logo h1 { font-size: 21px; font-weight: 800; color: var(--dark); letter-spacing: -0.5px; }
+  .sidebar-logo h1 span { color: var(--pink); }
+  .sidebar-logo .sub { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-xlight); margin-top: 3px; font-weight: 500; }
+
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px;
+    font-size: 13px; font-weight: 500;
+    color: var(--text-light);
+    cursor: pointer; transition: all 0.15s;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: var(--pink-pale); color: var(--pink-dark); }
+  .nav-item.active { color: var(--pink-dark); border-left-color: var(--pink); background: var(--pink-pale); font-weight: 600; }
+  .nav-item .icon { font-size: 14px; width: 16px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .new-booking-btn {
+    width: 100%; background: var(--dark); color: white;
+    border: none; border-radius: 8px; padding: 11px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    letter-spacing: 0.3px; transition: background 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .new-booking-btn:hover { background: var(--dark2); }
+  .clear-form { display: block; text-align: center; margin-top: 8px; font-size: 10px; color: var(--text-xlight); cursor: pointer; }
+
+  /* ── MAIN CONTENT ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--dark);
+    color: white;
+    display: flex; align-items: center; gap: 0;
+    padding: 0 28px;
+    height: 52px;
+    flex-shrink: 0;
+  }
+  .topbar-date { font-size: 11px; color: #aaa; min-width: 180px; font-weight: 400; }
+  .topbar-date strong { color: white; font-size: 13px; font-weight: 600; }
+
+  .topbar-appt {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 24px; border-left: 1px solid #444;
+    margin-left: 12px; min-width: 200px;
+  }
+  .appt-time { font-size: 12px; color: var(--pink-light); font-weight: 700; }
+  .appt-name { font-size: 13px; font-weight: 700; color: white; }
+  .appt-tag {
+    font-size: 10px; padding: 3px 8px; border-radius: 10px;
+    background: var(--pink); color: white; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .appt-tag.blue { background: #3a5f8a; }
+  .appt-loc { font-size: 11px; color: #999; }
+
+  .topbar-summary {
+    margin-left: auto; text-align: right;
+    font-size: 12px; color: #aaa; font-weight: 400;
+  }
+  .topbar-summary strong { color: var(--pink-light); display: block; font-size: 14px; font-weight: 700; }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    padding: 22px 28px 0;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .page-header h2 { font-size: 40px; font-weight: 900; color: var(--dark); letter-spacing: -1.5px; }
+  .page-header .month { font-size: 40px; font-weight: 300; color: var(--pink); letter-spacing: -1px; }
+  .breadcrumb { font-size: 12px; color: var(--text-xlight); margin-left: auto; font-weight: 400; }
+
+  /* ── STAT TILES ── */
+  .stats-row {
+    display: flex; gap: 0;
+    margin: 16px 28px 0;
+    background: white; border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .stat-tile {
+    flex: 1; padding: 16px 20px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+  .stat-tile:last-child { border-right: none; }
+  .stat-value { font-size: 30px; font-weight: 900; color: var(--dark); line-height: 1; letter-spacing: -1px; }
+  .stat-value.pink { color: var(--pink); }
+  .stat-label { font-size: 11px; color: var(--text-xlight); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500; }
+
+  /* ── THREE COLUMN BODY ── */
+  .body-content {
+    display: flex; gap: 16px;
+    padding: 16px 28px 20px;
+    flex: 1; overflow: hidden;
+    min-height: 0;
+  }
+
+  /* ── CALENDAR ── */
+  .calendar-col { flex: 2; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+
+  .calendar-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .calendar-header .cal-legend { display: flex; gap: 10px; align-items: center; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .legend-dot.booking { background: var(--pink); }
+  .legend-dot.personal { background: var(--blue); }
+  .cal-legend span { font-size: 10px; color: var(--text-light); }
+  .cal-nav { display: flex; align-items: center; gap: 8px; }
+  .cal-nav button { background: none; border: 1px solid var(--border); border-radius: 4px; width: 22px; height: 22px; cursor: pointer; font-size: 11px; color: var(--text-light); }
+  .cal-range { font-size: 11px; color: var(--text-light); font-weight: 600; }
+
+  .week-block { background: white; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+  .week-label { padding: 7px 12px; background: var(--cream-dark); font-size: 10px; font-weight: 700; color: var(--text-light); letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); }
+  .cal-day-header { padding: 7px 4px 5px; text-align: center; font-size: 10px; font-weight: 700; color: var(--text-xlight); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+
+  .cal-day {
+    border-right: 1px solid var(--border);
+    min-height: 68px; padding: 4px;
+    position: relative; vertical-align: top;
+  }
+  .cal-day:last-child { border-right: none; }
+  .day-num {
+    font-size: 13px; font-weight: 700; color: var(--text); width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  }
+  .day-num.today { background: var(--pink); color: white; }
+  .cal-event {
+    margin-top: 3px; padding: 3px 6px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; color: white;
+    background: var(--pink); white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; cursor: pointer;
+  }
+  .cal-event.personal { background: var(--blue); }
+  .cal-event.orange { background: var(--orange); }
+
+  .add-personal {
+    grid-column: 1/-1; padding: 5px 8px;
+    font-size: 10px; color: var(--pink-light);
+    cursor: pointer; border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .add-personal:hover { color: var(--pink); }
+
+  /* ── RIGHT PANELS ── */
+  .right-panels { flex: 1.2; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; min-width: 0; }
+
+  /* ── UPCOMING BOOKINGS ── */
+  .panel { background: white; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+  .panel-header {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); }
+  .panel-nav { display: flex; gap: 6px; align-items: center; }
+  .panel-nav button { background: none; border: 1px solid var(--border); border-radius: 4px; width: 20px; height: 20px; cursor: pointer; font-size: 10px; color: var(--text-light); }
+  .see-all { font-size: 10px; color: var(--pink); cursor: pointer; }
+
+  .booking-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 14px; border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.1s;
+  }
+  .booking-item:last-child { border-bottom: none; }
+  .booking-item:hover { background: var(--pink-pale); }
+  .booking-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--pink-pale); color: var(--pink-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
+  }
+  .booking-info { flex: 1; min-width: 0; }
+  .booking-name { font-size: 13px; font-weight: 700; color: var(--dark); }
+  .booking-sub { font-size: 11px; color: var(--text-light); }
+  .booking-tag {
+    font-size: 8px; padding: 2px 7px; border-radius: 8px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .tag-service { background: var(--pink-pale); color: var(--pink-dark); }
+  .tag-consult { background: #e8eef6; color: var(--blue); }
+  .tag-proposal { background: #fdf0e8; color: var(--orange); }
+  .tag-halfday { background: #eeeaf8; color: #7c5cbf; }
+  .booking-date {
+    font-size: 13px; font-weight: 800; color: var(--dark);
+    text-align: right; white-space: nowrap;
+  }
+  .booking-date span { display: block; font-size: 10px; font-weight: 400; color: var(--text-light); }
+
+  /* ── REVENUE CHART ── */
+  .chart-panel { background: white; border-radius: 10px; border: 1px solid var(--border); padding: 14px 16px; flex-shrink: 0; }
+  .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .chart-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); }
+  .chart-meta { text-align: right; }
+  .chart-total { font-size: 13px; font-weight: 800; color: var(--pink); display: block; }
+  .chart-sub { font-size: 10px; color: var(--text-xlight); }
+  .chart-legend { display: flex; gap: 12px; margin-bottom: 8px; }
+  .chart-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-light); font-weight: 500; }
+  .chart-legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+  .chart-wrap { height: 110px; }
+
+  /* ── REMINDERS PANEL ── */
+  .reminders-col { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0; overflow-y: auto; }
+  .reminders-panel { background: white; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; flex: 1; }
+  .reminders-panel .panel-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  .client-chip {
+    background: var(--dark); color: white; border-radius: 6px;
+    padding: 5px 10px; font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%;
+  }
+  .client-chip span { font-size: 9px; font-weight: 400; color: #aaa; display: block; margin-top: 1px; }
+
+  .reminder-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; border-bottom: 1px solid var(--border);
+  }
+  .reminder-item:last-child { border-bottom: none; }
+  .reminder-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: var(--green); }
+  .dot-orange { background: var(--orange); }
+  .dot-red { background: #c94a4a; }
+  .dot-gray { background: var(--text-xlight); }
+  .reminder-label { flex: 1; font-size: 11px; color: var(--text); font-weight: 500; }
+  .reminder-badge {
+    font-size: 8px; padding: 2px 6px; border-radius: 6px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;
+  }
+  .badge-sent { background: #e6f4ec; color: var(--green); }
+  .badge-not-sent { background: #faeaea; color: #c94a4a; }
+  .badge-due { background: #fdf0e0; color: var(--orange); }
+  .badge-action {
+    background: var(--pink); color: white;
+    border: none; border-radius: 5px; padding: 3px 8px;
+    font-size: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: 14px; width: 560px; max-width: 95vw;
+    max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal-header {
+    padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-header h3 { font-size: 16px; font-weight: 700; }
+  .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-light); }
+  .modal-body { padding: 20px 24px; }
+  .form-row { display: flex; gap: 12px; margin-bottom: 14px; }
+  .form-group { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Inter', sans-serif; }
+  .form-group input, .form-group select, .form-group textarea {
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 13px;
+    font-size: 14px; font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text);
+    transition: border 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--pink);
+  }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+  .modal-footer {
+    padding: 14px 24px 20px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+  .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 10px 20px; font-size: 14px; cursor: pointer; color: var(--text-light); font-family: 'Inter', sans-serif; }
+  .btn-save { background: var(--pink); border: none; border-radius: 8px; padding: 10px 24px; font-size: 14px; font-weight: 700; color: white; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .btn-save:hover { background: var(--pink-dark); }
+
+  .section-title { font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+
+  /* ── CLIENTS PAGE ── */
+  .cb-field-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-xlight);
+    margin: 12px 0 5px;
+  }
+  .cb-input {
+    width: 100%; border: 1px solid var(--border); border-radius: 6px;
+    padding: 9px 12px; font-size: 13px; font-family: 'Inter', sans-serif;
+    background: var(--white); color: var(--text);
+    margin-bottom: 0; transition: border 0.15s;
+  }
+  .cb-input:focus { outline: none; border-color: var(--pink); }
+  .cb-check-row { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  .cb-check {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text); cursor: pointer;
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 10px;
+  }
+  .cb-check input { accent-color: var(--pink); cursor: pointer; }
+  .cb-btn-primary {
+    flex: 1; background: var(--dark); color: white; border: none;
+    border-radius: 8px; padding: 13px; font-size: 13px; font-weight: 800;
+    letter-spacing: 1px; cursor: pointer; font-family: 'Inter', sans-serif;
+    transition: background 0.15s;
+  }
+  .cb-btn-primary:hover { background: #333; }
+  .cb-btn-secondary {
+    flex: 1; background: transparent; color: var(--dark);
+    border: 1.5px solid var(--dark); border-radius: 8px; padding: 13px;
+    font-size: 13px; font-weight: 700; letter-spacing: 1px; cursor: pointer;
+    font-family: 'Inter', sans-serif; transition: all 0.15s;
+  }
+  .cb-btn-secondary:hover { background: var(--dark); color: white; }
+
+  /* tabs */
+  .cb-tab {
+    padding: 8px 14px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    border: none; background: transparent; cursor: pointer;
+    color: var(--text-xlight); border-bottom: 2px solid transparent;
+    font-family: 'Inter', sans-serif; transition: all 0.15s;
+  }
+  .cb-tab.active { color: var(--dark); border-bottom-color: var(--dark); background: var(--dark); color: white; border-radius: 6px 6px 0 0; }
+  .cb-tab:hover:not(.active) { color: var(--pink); }
+
+  /* client rows */
+  .client-row {
+    display: grid; grid-template-columns: 1fr 160px 90px 80px 40px;
+    padding: 0 24px; border-bottom: 1px solid var(--border);
+    align-items: center; min-height: 64px; cursor: pointer;
+    background: white; transition: background 0.1s;
+  }
+  .client-row:hover { background: var(--pink-pale); }
+  .client-row.highlight { background: #fffdf0; }
+  .client-row.highlight:hover { background: #fff8e0; }
+  .client-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--pink-pale); color: var(--pink-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; flex-shrink: 0;
+  }
+  .client-name-big {
+    font-size: 22px; font-weight: 700; color: var(--dark);
+    letter-spacing: -0.5px; font-style: italic;
+  }
+  .svc-tag {
+    display: inline-block; font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 4px 10px; border-radius: 20px; border: 1px solid;
+  }
+  .svc-service   { color: var(--pink-dark); border-color: var(--pink-light); background: var(--pink-pale); }
+  .svc-consult   { color: #666; border-color: #ccc; background: #f5f5f5; }
+  .svc-scheduled { color: #5a7eb5; border-color: #b8c8e8; background: #eef2fa; }
+  .svc-proposal  { color: var(--orange); border-color: #f0c8a8; background: #fdf3ec; }
+  .svc-end       { color: var(--green); border-color: #a8d4b8; background: #eef8f2; }
+  .cb-edit-btn {
+    font-size: 11px; font-weight: 700; color: var(--text-light);
+    background: none; border: 1px solid var(--border); border-radius: 5px;
+    padding: 4px 10px; cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .cb-edit-btn:hover { border-color: var(--pink); color: var(--pink); }
+  .progress-dots { display: flex; gap: 3px; }
+  .pdot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  .pdot.done { background: var(--green); }
+  .pdot.pending { background: var(--orange); }
+  .pdot.current { background: var(--pink); }
+
+  /* ── TRACKER GRID ── */
+  .tracker-header {
+    display: grid;
+    grid-template-columns: 190px 110px 65px repeat(6, 1fr) 58px;
+    padding: 0 0;
+    background: var(--dark);
+    border-bottom: 2px solid var(--dark);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .th-client, .th-svc, .th-date, .th-rem, .th-edit {
+    padding: 10px 12px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: rgba(255,255,255,0.7);
+  }
+  .th-rem {
+    text-align: center; border-left: 1px solid rgba(255,255,255,0.1);
+    color: white; font-size: 9px;
+  }
+
+  .tracker-row {
+    display: grid;
+    grid-template-columns: 190px 110px 65px repeat(6, 1fr) 58px;
+    border-bottom: 1px solid var(--border);
+    background: white; cursor: pointer;
+    transition: background 0.1s;
+    min-height: 58px;
+    align-items: center;
+  }
+  .tracker-row:hover { background: var(--pink-pale); }
+
+  .tc-client {
+    display: flex; align-items: center; gap:10px;
+    padding: 10px 12px; min-width:0;
+  }
+  .tc-svc  { padding: 0 12px; }
+  .tc-date { padding: 0 8px; }
+  .tc-edit { padding: 0 8px; display:flex; align-items:center; justify-content:center; }
+
+  .tracker-cell {
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px 4px; border-left: 1px solid var(--border);
+    height: 100%; cursor: pointer; transition: background 0.1s;
+  }
+  .tracker-cell:hover { background: var(--cream-dark); }
+
+  .rstatus {
+    display: inline-block; padding: 4px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 700; text-align: center;
+    white-space: nowrap; pointer-events: none;
+  }
+  .rstatus-sent    { background: #e6f4ec; color: var(--green); border: 1px solid #b8dfc8; }
+  .rstatus-pending { background: var(--cream-dark); color: #bbb; border: 1px dashed #ddd; font-weight: 500; }
+
+  /* reminder panel rows */
+  .rp-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .rp-row:hover { background: var(--cream); }
+  .rp-dot-big {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; flex-shrink: 0; cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .rp-dot-big:hover { transform: scale(1.1); }
+  .rp-dot-sent    { background: var(--green); color: white; }
+  .rp-dot-pending { background: var(--cream-dark); color: var(--text-xlight); border: 2px dashed #ccc; }
+  .rp-label { flex: 1; }
+  .rp-label-main  { font-size: 12px; font-weight: 600; color: var(--dark); }
+  .rp-label-sub   { font-size: 10px; color: var(--text-xlight); margin-top:1px; }
+  .rp-badge {
+    font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; cursor: pointer;
+  }
+  .rp-badge-sent    { background: #e6f4ec; color: var(--green); }
+  .rp-badge-pending { background: var(--pink-pale); color: var(--pink-dark); }
+
+  /* import/export bar */
+  .ie-bar {
+    display: flex; gap: 8px; align-items: center;
+    padding: 8px 24px; background: var(--cream-dark);
+    border-bottom: 1px solid var(--border);
+  }
+  .ie-btn {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; padding: 6px 14px;
+    border-radius: 6px; cursor: pointer; font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+  }
+  .ie-btn-import { background: var(--white); border: 1px solid var(--border); color: var(--text); }
+  .ie-btn-import:hover { border-color: var(--pink); color: var(--pink); }
+  .ie-btn-export { background: var(--dark); border: 1px solid var(--dark); color: white; }
+  .ie-btn-export:hover { background: #333; }
+  .ie-count { margin-left: auto; font-size: 11px; color: var(--text-xlight); }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="est">Est. Qatar</div>
+    <h1>Space <span>Makers</span></h1>
+    <div class="sub">Business Dashboard</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" onclick="showPage('overview')"><span class="icon">▣</span> Overview</a>
+    <a class="nav-item" onclick="showPage('clients')"><span class="icon">👥</span> Clients &amp; Bookings</a>
+    <a class="nav-item" onclick="showPage('calendar')"><span class="icon">📅</span> Calendar</a>
+    <a class="nav-item" onclick="showPage('reminders')"><span class="icon">🔔</span> Reminders</a>
+    <a class="nav-item" onclick="showPage('revenue')"><span class="icon">💰</span> Revenue</a>
+    <a class="nav-item" onclick="showPage('transport')"><span class="icon">🚗</span> Transport</a>
+    <a class="nav-item" onclick="showPage('teams')"><span class="icon">👩‍💼</span> Teams &amp; Costs</a>
+    <a class="nav-item" onclick="showPage('whatsapp')"><span class="icon">💬</span> WhatsApp Scheduler</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="new-booking-btn" onclick="openModal('booking')">+ New Booking</button>
+    <span class="clear-form">Clear Form</span>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main" id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-date">
+      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;">Today</div>
+      <strong id="today-date">Wednesday, 8 April 2026</strong>
+    </div>
+
+    <div class="topbar-appt">
+      <span class="appt-time">09:00</span>
+      <div>
+        <div class="appt-name">Sara Al-Mansoori</div>
+        <div class="appt-loc">Services Day · The Pearl</div>
+      </div>
+      <span class="appt-tag">Service Day</span>
+    </div>
+
+    <div class="topbar-appt">
+      <span class="appt-time">14:00</span>
+      <div>
+        <div class="appt-name">Reem Hassan</div>
+        <div class="appt-loc">Consultation · Lusail</div>
+      </div>
+      <span class="appt-tag blue">Consultation</span>
+    </div>
+
+    <div class="topbar-summary">
+      <span>2 bookings today</span>
+      <strong>QAR 2,550 expected</strong>
+    </div>
+    <div id="save-indicator" style="margin-left:auto;padding:0 20px;display:flex;align-items:center;gap:6px;font-size:11px;color:#666;opacity:0;transition:opacity 0.4s;">
+      <span style="color:#5a9e6f;font-size:13px;">✓</span> Saved
+    </div>
+  </div>
+
+  <!-- ══ OVERVIEW PAGE ══ -->
+  <div id="page-overview" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+
+    <div class="page-header">
+      <h2>Overview</h2>
+      <span class="month">April 2026</span>
+      <span class="breadcrumb">Dashboard · Space Makers · CRM</span>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-tile">
+        <div class="stat-value">12</div>
+        <div class="stat-label">Bookings This Month</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value pink">QAR 18,400</div>
+        <div class="stat-label">Revenue MTD</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Pending Deposits</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value">5</div>
+        <div class="stat-label">Reminders Due</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value pink">94%</div>
+        <div class="stat-label">Occupancy Rate</div>
+      </div>
+    </div>
+
+    <!-- BODY: 3 columns -->
+    <div class="body-content">
+
+      <!-- CALENDAR -->
+      <div class="calendar-col">
+        <div class="calendar-header">
+          <div class="cal-legend">
+            <span class="legend-dot booking"></span><span>Booking</span>
+            <span class="legend-dot personal" style="margin-left:6px;"></span><span>Personal / Reminder</span>
+          </div>
+          <div class="cal-nav">
+            <button>‹</button>
+            <span class="cal-range">8 – 21 Apr 2026</span>
+            <button>›</button>
+          </div>
+        </div>
+
+        <!-- Week 1 -->
+        <div class="week-block">
+          <div class="week-label">WEEK 1 · 8 – 14 Apr</div>
+          <div class="cal-grid">
+            <div class="cal-day-header">Mon</div>
+            <div class="cal-day-header">Tue</div>
+            <div class="cal-day-header">Wed</div>
+            <div class="cal-day-header">Thu</div>
+            <div class="cal-day-header">Fri</div>
+            <div class="cal-day-header">Sat</div>
+            <div class="cal-day-header">Sun</div>
+            <!-- Days 8-14 -->
+            <div class="cal-day"><div class="day-num today">8</div><div class="cal-event">Sara Al-Mansoori</div><div class="cal-event">Reem Hassan</div></div>
+            <div class="cal-day"><div class="day-num">9</div></div>
+            <div class="cal-day"><div class="day-num">10</div><div class="cal-event">Layla Hassan</div></div>
+            <div class="cal-day"><div class="day-num">11</div><div class="cal-event">Noura Al-Thani</div></div>
+            <div class="cal-day"><div class="day-num">12</div><div class="cal-event orange">Fatima Al-K.</div></div>
+            <div class="cal-day"><div class="day-num">13</div><div class="cal-event orange">IKEA Run</div></div>
+            <div class="cal-day"><div class="day-num">14</div><div class="cal-event">Mariam Jaber</div></div>
+            <div class="add-personal" onclick="openModal('personal')">
+              <span style="color:var(--pink)">●</span> + Add personal entry or reminder...
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 2 -->
+        <div class="week-block">
+          <div class="week-label">WEEK 2 · 15 – 21 Apr</div>
+          <div class="cal-grid">
+            <div class="cal-day-header">Mon</div>
+            <div class="cal-day-header">Tue</div>
+            <div class="cal-day-header">Wed</div>
+            <div class="cal-day-header">Thu</div>
+            <div class="cal-day-header">Fri</div>
+            <div class="cal-day-header">Sat</div>
+            <div class="cal-day-header">Sun</div>
+            <div class="cal-day"><div class="day-num">15</div><div class="cal-event">Hessa Al-Marri</div><div class="cal-event personal">Monthly Review</div></div>
+            <div class="cal-day"><div class="day-num">16</div><div class="cal-event">Aisha Al-Emadi</div></div>
+            <div class="cal-day"><div class="day-num">17</div><div class="cal-event">Dana Al-Fardan</div></div>
+            <div class="cal-day"><div class="day-num">18</div><div class="cal-event personal">Day Off</div></div>
+            <div class="cal-day"><div class="day-num">19</div></div>
+            <div class="cal-day"><div class="day-num">20</div><div class="cal-event">Maha Al-Sulaiti</div></div>
+            <div class="cal-day"><div class="day-num">21</div><div class="cal-event">Noor Ibrahim</div></div>
+            <div class="add-personal" onclick="openModal('personal')">
+              <span style="color:var(--pink)">●</span> + Add personal entry or reminder...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPCOMING BOOKINGS + REVENUE CHART -->
+      <div class="right-panels">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Upcoming Bookings</span>
+            <div class="panel-nav">
+              <button>‹</button>
+              <span class="see-all">See all</span>
+              <button>›</button>
+            </div>
+          </div>
+          <div class="booking-item">
+            <div class="booking-avatar">SA</div>
+            <div class="booking-info">
+              <div class="booking-name">Sara Al-Mansoori</div>
+              <div class="booking-sub">1 day · QAR 200</div>
+            </div>
+            <span class="booking-tag tag-service">Service Day</span>
+            <div class="booking-date">Wed 10<span>Apr</span></div>
+          </div>
+          <div class="booking-item">
+            <div class="booking-avatar">LH</div>
+            <div class="booking-info">
+              <div class="booking-name">Layla Hassan</div>
+              <div class="booking-sub">2 hrs · QAR 300</div>
+            </div>
+            <span class="booking-tag tag-consult">Consultation</span>
+            <div class="booking-date">Thu 11<span>Apr</span></div>
+          </div>
+          <div class="booking-item">
+            <div class="booking-avatar">NT</div>
+            <div class="booking-info">
+              <div class="booking-name">Noura Al-Thani</div>
+              <div class="booking-sub">Half Day · QAR 350</div>
+            </div>
+            <span class="booking-tag tag-halfday">Half Day</span>
+            <div class="booking-date">Fri 12<span>Apr</span></div>
+          </div>
+          <div class="booking-item">
+            <div class="booking-avatar">FK</div>
+            <div class="booking-info">
+              <div class="booking-name">Fatima Al-Kuwari</div>
+              <div class="booking-sub">Follow-up pending</div>
+            </div>
+            <span class="booking-tag tag-proposal">Proposal</span>
+            <div class="booking-date">Sun 14<span>Apr</span></div>
+          </div>
+          <div class="booking-item">
+            <div class="booking-avatar">MJ</div>
+            <div class="booking-info">
+              <div class="booking-name">Mariam Jaber</div>
+              <div class="booking-sub">Full Day · QAR 600</div>
+            </div>
+            <span class="booking-tag tag-service">Service Day</span>
+            <div class="booking-date">Mon 15<span>Apr</span></div>
+          </div>
+          <div class="booking-item">
+            <div class="booking-avatar">HM</div>
+            <div class="booking-info">
+              <div class="booking-name">Hessa Al-Marri</div>
+              <div class="booking-sub">Free-of-Clue</div>
+            </div>
+            <span class="booking-tag tag-proposal">End of Series</span>
+            <div class="booking-date">Tue 16<span>Apr</span></div>
+          </div>
+        </div>
+
+        <!-- REVENUE CHART -->
+        <div class="chart-panel">
+          <div class="chart-header">
+            <div>
+              <span class="chart-title">Revenue vs. Target</span>
+              <div class="chart-legend" style="margin-top:6px;margin-bottom:0;">
+                <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--pink);"></div> Net Revenue</div>
+                <div class="chart-legend-item"><div class="chart-legend-dot" style="background:#d4c5b0;border:1.5px dashed #b0a090;box-sizing:border-box;"></div> Monthly Target</div>
+              </div>
+            </div>
+            <div class="chart-meta">
+              <span class="chart-total">QAR 56,800 YTD</span>
+              <span class="chart-sub">After deductions</span>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- REMINDERS PANEL -->
+      <div class="reminders-col">
+        <div class="reminders-panel">
+          <div class="panel-header">
+            <span class="panel-title">Reminders</span>
+            <div class="client-chip">
+              Sara Al-Mansoori
+              <span>Service Day · Wed 10 Apr</span>
+            </div>
+          </div>
+
+          <div class="reminder-item">
+            <span class="reminder-dot dot-green"></span>
+            <span class="reminder-label">Consultation Payment</span>
+            <span class="reminder-badge badge-sent">SENT</span>
+          </div>
+          <div class="reminder-item">
+            <span class="reminder-dot dot-green"></span>
+            <span class="reminder-label">Consultation Appt.</span>
+            <span class="reminder-badge badge-sent">SENT</span>
+          </div>
+          <div class="reminder-item">
+            <span class="reminder-dot dot-green"></span>
+            <span class="reminder-label">50% Deposit Request</span>
+            <span class="reminder-badge badge-sent">SENT</span>
+          </div>
+          <div class="reminder-item">
+            <span class="reminder-dot dot-green"></span>
+            <span class="reminder-label">Proposal Follow-up</span>
+            <span class="reminder-badge badge-sent">SENT</span>
+          </div>
+          <div class="reminder-item">
+            <span class="reminder-dot dot-orange"></span>
+            <span class="reminder-label">Service — 3 Days</span>
+            <span class="reminder-badge badge-due">DUE TOMORROW</span>
+          </div>
+          <div class="reminder-item">
+            <span class="reminder-dot dot-red"></span>
+            <span class="reminder-label">Service — 1 Day</span>
+            <button class="badge-action" onclick="openModal('send-reminder')">SEND</button>
+          </div>
+          <div class="reminder-item">
+            <span class="reminder-dot dot-red"></span>
+            <span class="reminder-label">50% Balance Morning</span>
+            <button class="badge-action" onclick="openModal('send-reminder')">SEND</button>
+          </div>
+          <div class="reminder-item">
+            <span class="reminder-dot dot-gray"></span>
+            <span class="reminder-label">Thank You &amp; Feedback</span>
+            <span style="font-size:14px;cursor:pointer;color:var(--text-xlight)">⋯</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ CLIENTS & BOOKINGS PAGE ══ -->
+  <div id="page-clients" style="display:none;flex:1;overflow:hidden;flex-direction:column;">
+
+    <!-- Page header -->
+    <div style="padding:18px 28px 0; display:flex; align-items:baseline; gap:10px; border-bottom:1px solid var(--border); background:var(--white);">
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--text-xlight);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;">Space Makers —</div>
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <h2 style="font-size:38px;font-weight:900;color:var(--dark);letter-spacing:-1.5px;">Clients &amp;</h2>
+          <span style="font-size:38px;font-weight:300;color:var(--pink);font-style:italic;letter-spacing:-1px;">Bookings</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-xlight);padding-bottom:14px;margin-top:2px;">INPUT · TRACK · MANAGE</div>
+      </div>
+    </div>
+
+    <!-- Two-column layout -->
+    <div style="display:flex;flex:1;overflow:hidden;">
+
+      <!-- LEFT: NEW BOOKING FORM -->
+      <div style="width:440px;flex-shrink:0;background:var(--cream);border-right:1px solid var(--border);overflow-y:auto;padding:20px 24px 100px;">
+
+        <!-- Form title + Edit mode indicator -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--dark);" id="form-mode-title">New Booking</div>
+          <div id="edit-mode-badge" style="display:none;background:var(--pink-pale);color:var(--pink-dark);font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:0.5px;">✏️ EDITING</div>
+        </div>
+
+        <!-- Client Name -->
+        <div class="cb-field-label">Client Name</div>
+        <input class="cb-input" type="text" placeholder="Sara Al-Mansoori" id="f-name"/>
+
+        <!-- Phone -->
+        <div class="cb-field-label">Phone / WhatsApp Number</div>
+        <input class="cb-input" type="tel" placeholder="+974 XXXXXXXX" id="f-phone"/>
+
+        <!-- Area -->
+        <div class="cb-field-label">Area</div>
+        <input class="cb-input" type="text" placeholder="The Pearl, Lusail..." id="f-area"/>
+
+        <!-- Google Maps -->
+        <div class="cb-field-label">Google Maps Link</div>
+        <input class="cb-input" type="text" placeholder="maps.google.com/pin/..." id="f-maps"/>
+
+        <!-- House Number -->
+        <div class="cb-field-label">House / Villa / Apartment Number</div>
+        <input class="cb-input" type="text" placeholder="e.g. Villa 14, Apt 302, Building C" id="f-housenumber"/>
+
+        <!-- Service Type -->
+        <div class="cb-field-label">Service Type</div>
+        <div class="cb-check-row">
+          <label class="cb-check"><input type="radio" name="svctype" value="Service Day" checked/> Service Day</label>
+          <label class="cb-check"><input type="radio" name="svctype" value="Consultation Appointment"/> Consultation</label>
+        </div>
+        <div class="cb-check-row" style="margin-top:4px;">
+          <label class="cb-check"><input type="radio" name="svctype" value="Shopping for Client"/> Shopping for Client</label>
+          <label class="cb-check"><input type="radio" name="svctype" value="Other"/> Other</label>
+        </div>
+
+        <!-- Duration -->
+        <div class="cb-field-label">Duration</div>
+        <div class="cb-check-row">
+          <label class="cb-check"><input type="radio" name="duration" value="Full Day" checked onclick="onDurationChange('Full Day')"/> Full Day</label>
+          <label class="cb-check"><input type="radio" name="duration" value="Half Day" onclick="onDurationChange('Half Day')"/> Half Day</label>
+          <label class="cb-check"><input type="radio" name="duration" value="Hourly" onclick="onDurationChange('Hourly')"/> Hourly</label>
+        </div>
+
+        <!-- Booking Date(s) -->
+        <div class="cb-field-label">Booking Schedule</div>
+        <div class="cb-check-row">
+          <label class="cb-check"><input type="radio" name="datetype" value="Single" checked onclick="toggleDateInputs('single')"/> 1 Day</label>
+          <label class="cb-check"><input type="radio" name="datetype" value="Consecutive" onclick="toggleDateInputs('consecutive')"/> Consecutive Days</label>
+          <label class="cb-check"><input type="radio" name="datetype" value="Random" onclick="toggleDateInputs('random')"/> Random Days</label>
+        </div>
+
+        <!-- Single date -->
+        <div id="date-single" style="margin-top:6px;">
+          <input class="cb-input" type="date" id="f-date-single" oninput="updateDatesPreview()" style="margin-bottom:0;"/>
+        </div>
+
+        <!-- Consecutive dates -->
+        <div id="date-consecutive" style="display:none;margin-top:6px;">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div style="flex:1;">
+              <div style="font-size:10px;color:var(--text-xlight);margin-bottom:3px;">From</div>
+              <input class="cb-input" type="date" id="f-date-from" oninput="updateDatesPreview()" style="margin-bottom:0;"/>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:10px;color:var(--text-xlight);margin-bottom:3px;">To</div>
+              <input class="cb-input" type="date" id="f-date-to" oninput="updateDatesPreview()" style="margin-bottom:0;"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Random dates -->
+        <div id="date-random" style="display:none;margin-top:6px;">
+          <div style="font-size:10px;color:var(--text-xlight);margin-bottom:4px;">Click dates to add them one by one</div>
+          <input class="cb-input" type="date" id="f-date-random-picker" onchange="addRandomDate(this)" style="margin-bottom:6px;"/>
+          <div id="random-dates-chips" style="display:flex;flex-wrap:wrap;gap:5px;min-height:32px;"></div>
+        </div>
+
+        <!-- Selected Dates preview -->
+        <div id="dates-preview-wrap" style="margin-top:8px;">
+          <div class="cb-field-label">Selected Dates <span id="dates-day-count" style="color:var(--pink);font-weight:700;"></span></div>
+          <div id="dates-preview" class="cb-input" style="color:var(--text-light);font-size:12px;min-height:36px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">—</div>
+        </div>
+
+        <!-- Extended Hours -->
+        <div class="cb-field-label">Extended Hours</div>
+        <div class="cb-check-row">
+          <label class="cb-check"><input type="radio" name="overtime" value="No" checked/> Standard</label>
+          <label class="cb-check"><input type="radio" name="overtime" value="Overtime"/> Overtime (+)</label>
+        </div>
+
+        <div style="border-top:1px solid var(--border);margin:14px 0 12px;"></div>
+
+        <!-- ── PRICING SECTION ── -->
+        <div style="border-top:1px solid var(--border);margin:14px 0 12px;"></div>
+        <div style="font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dark);margin-bottom:12px;">Pricing</div>
+
+        <!-- Step 1: Choose service rate type -->
+        <div class="cb-field-label">How is this service priced?</div>
+        <div class="cb-check-row" style="margin-bottom:12px;">
+          <label class="cb-check"><input type="radio" name="pricetype" value="fullday" checked onclick="onPriceTypeChange('fullday')"/> Full Day</label>
+          <label class="cb-check"><input type="radio" name="pricetype" value="halfday" onclick="onPriceTypeChange('halfday')"/> Half Day</label>
+          <label class="cb-check"><input type="radio" name="pricetype" value="hourly" onclick="onPriceTypeChange('hourly')"/> Hourly</label>
+        </div>
+
+        <!-- Full Day pricing -->
+        <div id="price-fullday">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div>
+              <div class="cb-field-label">Full Day Rate (QAR)</div>
+              <input class="cb-input" type="number" placeholder="e.g. 800" id="f-rate-fullday" oninput="calcFinancials()"/>
+            </div>
+            <div>
+              <div class="cb-field-label">Number of Days</div>
+              <input class="cb-input" type="number" placeholder="1" id="f-num-fulldays" value="1" min="1" oninput="calcFinancials()"/>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-xlight);margin-top:4px;">e.g. QAR 800 × 3 days = QAR 2,400</div>
+        </div>
+
+        <!-- Half Day pricing -->
+        <div id="price-halfday" style="display:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div>
+              <div class="cb-field-label">Half Day Rate (QAR)</div>
+              <input class="cb-input" type="number" placeholder="e.g. 450" id="f-rate-halfday" oninput="calcFinancials()"/>
+            </div>
+            <div>
+              <div class="cb-field-label">Number of Half Days</div>
+              <input class="cb-input" type="number" placeholder="1" id="f-num-halfdays" value="1" min="1" oninput="calcFinancials()"/>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-xlight);margin-top:4px;">e.g. QAR 450 × 2 half days = QAR 900</div>
+        </div>
+
+        <!-- Hourly pricing -->
+        <div id="price-hourly" style="display:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div>
+              <div class="cb-field-label">Hourly Rate (QAR)</div>
+              <input class="cb-input" type="number" placeholder="e.g. 150" id="f-rate-hour" oninput="calcFinancials()"/>
+            </div>
+            <div>
+              <div class="cb-field-label">Number of Hours</div>
+              <input class="cb-input" type="number" placeholder="e.g. 4" id="f-num-hours" value="1" min="1" oninput="calcFinancials()"/>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-xlight);margin-top:4px;">e.g. QAR 150 × 4 hours = QAR 600</div>
+        </div>
+
+        <!-- Transport Fee -->
+        <div class="cb-field-label" style="margin-top:10px;">Transport Fee (QAR) <span style="font-weight:400;color:var(--text-xlight);">— optional</span></div>
+        <input class="cb-input" type="number" placeholder="0" id="f-transport" oninput="calcFinancials()"/>
+
+        <!-- Auto-calculated breakdown -->
+        <div style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-top:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Calculation</span>
+            <span style="font-size:10px;color:rgba(255,255,255,0.4);" id="price-formula">— × — = —</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div style="background:rgba(255,255,255,0.07);border-radius:7px;padding:10px 12px;text-align:center;">
+              <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Total Price</div>
+              <div style="font-size:15px;font-weight:900;color:white;" id="calc-total-display">QAR 0</div>
+            </div>
+            <div style="background:rgba(201,118,138,0.25);border-radius:7px;padding:10px 12px;text-align:center;">
+              <div style="font-size:9px;font-weight:700;color:var(--pink-light);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">50% Deposit</div>
+              <div style="font-size:15px;font-weight:900;color:var(--pink-light);" id="calc-deposit-display">QAR 0</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.07);border-radius:7px;padding:10px 12px;text-align:center;">
+              <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Balance Due</div>
+              <div style="font-size:15px;font-weight:900;color:white;" id="calc-balance-display">QAR 0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden fields for saving -->
+        <input type="hidden" id="f-deposit"/>
+        <input type="hidden" id="f-balance"/>
+
+        <!-- Payment Status -->
+        <div class="cb-field-label" style="margin-top:12px;">Payment Received</div>
+        <div class="cb-check-row">
+          <label class="cb-check"><input type="checkbox" id="f-deposit-received"/> ✅ Deposit Received</label>
+          <label class="cb-check"><input type="checkbox" id="f-balance-received"/> ✅ Balance Received</label>
+        </div>
+
+        <!-- Payment Status -->
+        <div class="cb-field-label">Payment Status</div>
+        <div class="cb-check-row">
+          <label class="cb-check"><input type="checkbox" id="f-deposit-received"/> ✅ Deposit Received</label>
+          <label class="cb-check"><input type="checkbox" id="f-balance-received"/> ✅ Balance Received</label>
+        </div>
+
+        <div style="border-top:1px solid var(--border);margin:14px 0 12px;"></div>
+
+        <!-- Language -->
+        <div class="cb-field-label">Language Preference</div>
+        <div class="cb-check-row">
+          <label class="cb-check"><input type="radio" name="lang" value="English" checked/> English</label>
+          <label class="cb-check"><input type="radio" name="lang" value="Arabic"/> عربي</label>
+        </div>
+
+        <!-- Notes -->
+        <div class="cb-field-label">Notes</div>
+        <textarea class="cb-input" rows="3" placeholder="Client wants to focus on kitchen &amp; wardrobes..." id="f-notes" style="resize:vertical;"></textarea>
+
+        <!-- Buttons -->
+        <div style="display:flex;gap:10px;margin-top:18px;" id="form-action-btns">
+          <button class="cb-btn-primary" onclick="saveBooking()">BOOK NOW</button>
+          <button class="cb-btn-secondary" onclick="scheduleBooking()">SCHEDULE LATER</button>
+        </div>
+        <!-- Edit mode buttons (hidden by default) -->
+        <div style="display:none;gap:10px;margin-top:18px;" id="form-edit-btns">
+          <button class="cb-btn-primary" onclick="updateBooking()" style="background:var(--green);">SAVE CHANGES</button>
+          <button class="cb-btn-secondary" onclick="cancelEdit()">CANCEL EDIT</button>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: ALL CLIENTS TABLE -->
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--cream);">
+
+        <!-- Table header -->
+        <div style="padding:16px 24px 0;background:var(--white);border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--dark);">All Clients</div>
+            <div style="font-size:13px;font-weight:300;color:var(--pink);font-style:italic;">April 2026 ↗</div>
+          </div>
+          <!-- Filter tabs -->
+          <div style="display:flex;gap:2px;">
+            <button class="cb-tab active" onclick="filterClients('ALL',this)">ALL</button>
+            <button class="cb-tab" onclick="filterClients('Service Day',this)">SERVICE DAY</button>
+            <button class="cb-tab" onclick="filterClients('Consultation',this)">CONSULTATION</button>
+            <button class="cb-tab" onclick="filterClients('Scheduled',this)">SCHEDULED</button>
+            <button class="cb-tab" onclick="filterClients('Proposal',this)">PROPOSAL</button>
+            <button class="cb-tab" onclick="filterClients('End of Service',this)">END OF SERVICE</button>
+          </div>
+        </div>
+
+        <!-- Column headers — fixed tracker grid -->
+        <div class="tracker-header">
+          <div class="th-client">Client</div>
+          <div class="th-svc">Service</div>
+          <div class="th-date">Date</div>
+          <div class="th-rem">Deposit</div>
+          <div class="th-rem">Proposal</div>
+          <div class="th-rem">3 Days</div>
+          <div class="th-rem">1 Day</div>
+          <div class="th-rem">Balance</div>
+          <div class="th-rem">Feedback</div>
+          <div class="th-edit"></div>
+        </div>
+
+        <!-- Import / Export bar -->
+        <div class="ie-bar">
+          <label class="ie-btn ie-btn-import" title="Import clients from Excel/CSV">
+            ⬆ Import from Excel
+            <input type="file" accept=".csv,.xlsx" style="display:none;" onchange="importClients(this)"/>
+          </label>
+          <button class="ie-btn ie-btn-export" onclick="exportClients()">⬇ Export to Excel</button>
+          <span class="ie-count" id="client-count">8 clients</span>
+        </div>
+
+        <!-- Client rows + Reminder panel side by side -->
+        <div style="flex:1;display:flex;overflow:hidden;">
+          <div style="flex:1;overflow-y:auto;" id="clients-table-body"></div>
+
+          <!-- REMINDER PANEL (slides in when client is clicked) -->
+          <div id="reminder-panel" data-client-id="" style="width:0;overflow:hidden;transition:width 0.25s ease;background:var(--white);border-left:1px solid var(--border);flex-shrink:0;">
+            <div style="width:280px;padding:0;">
+              <!-- Panel header -->
+              <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-xlight);">Reminders</div>
+                  <div style="font-size:14px;font-weight:800;color:var(--dark);margin-top:2px;" id="rp-client-name">—</div>
+                  <div style="font-size:11px;color:var(--text-light);" id="rp-client-sub"></div>
+                </div>
+                <button onclick="closeReminderPanel()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-xlight);padding:4px;">×</button>
+              </div>
+
+              <!-- 6 reminder rows -->
+              <div id="rp-reminders-list" style="padding:8px 0;"></div>
+
+              <!-- WhatsApp quick action -->
+              <div style="padding:12px 16px;border-top:1px solid var(--border);">
+                <div style="font-size:10px;font-weight:700;color:var(--text-xlight);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Quick Schedule</div>
+                <button onclick="scheduleWhatsApp()" style="width:100%;background:#25d366;color:white;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;">
+                  💬 Schedule WhatsApp Messages
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CALENDAR PAGE (placeholder) ══ -->
+  <div id="page-calendar" style="display:none;flex:1;overflow:hidden;flex-direction:column;">
+    <div class="page-header"><h2>Calendar</h2></div>
+    <div style="padding:20px 28px;flex:1;overflow-y:auto;"><div style="background:white;border-radius:12px;border:1px solid var(--border);padding:24px;text-align:center;color:var(--text-light);font-size:13px;"><div style="font-size:32px;margin-bottom:8px;">📅</div><div style="font-weight:600;font-size:15px;color:var(--dark);margin-bottom:6px;">Calendar View</div><div>Full monthly calendar with all client bookings and personal reminders.</div></div></div>
+  </div>
+
+  <!-- ══ REMINDERS PAGE (placeholder) ══ -->
+  <div id="page-reminders" style="display:none;flex:1;overflow:hidden;flex-direction:column;">
+    <div class="page-header"><h2>Reminders</h2></div>
+    <div style="padding:20px 28px;flex:1;overflow-y:auto;"><div style="background:white;border-radius:12px;border:1px solid var(--border);padding:24px;text-align:center;color:var(--text-light);font-size:13px;"><div style="font-size:32px;margin-bottom:8px;">🔔</div><div style="font-weight:600;font-size:15px;color:var(--dark);margin-bottom:6px;">Reminders</div><div>All client reminders with Sent / Not Sent / Due Tomorrow status.</div></div></div>
+  </div>
+
+  <!-- ══ REVENUE PAGE (placeholder) ══ -->
+  <div id="page-revenue" style="display:none;flex:1;overflow:hidden;flex-direction:column;">
+    <div class="page-header"><h2>Revenue</h2></div>
+    <div style="padding:20px 28px;flex:1;overflow-y:auto;"><div style="background:white;border-radius:12px;border:1px solid var(--border);padding:24px;text-align:center;color:var(--text-light);font-size:13px;"><div style="font-size:32px;margin-bottom:8px;">💰</div><div style="font-weight:600;font-size:15px;color:var(--dark);margin-bottom:6px;">Revenue</div><div>All payments tracked by type, month, and status in QAR.</div></div></div>
+  </div>
+
+  <!-- ══ TRANSPORT PAGE (placeholder) ══ -->
+  <div id="page-transport" style="display:none;flex:1;overflow:hidden;flex-direction:column;">
+    <div class="page-header"><h2>Transport</h2></div>
+    <div style="padding:20px 28px;flex:1;overflow-y:auto;"><div style="background:white;border-radius:12px;border:1px solid var(--border);padding:24px;text-align:center;color:var(--text-light);font-size:13px;"><div style="font-size:32px;margin-bottom:8px;">🚗</div><div style="font-weight:600;font-size:15px;color:var(--dark);margin-bottom:6px;">Transport</div><div>Trip tracking including IKEA runs, team drop-offs, and supply runs.</div></div></div>
+  </div>
+
+  <!-- ══ TEAMS PAGE (placeholder) ══ -->
+  <div id="page-teams" style="display:none;flex:1;overflow:hidden;flex-direction:column;">
+    <div class="page-header"><h2>Teams</h2><span class="month">&amp; Costs</span></div>
+    <div style="padding:20px 28px;flex:1;overflow-y:auto;"><div style="background:white;border-radius:12px;border:1px solid var(--border);padding:24px;text-align:center;color:var(--text-light);font-size:13px;"><div style="font-size:32px;margin-bottom:8px;">👩‍💼</div><div style="font-weight:600;font-size:15px;color:var(--dark);margin-bottom:6px;">Teams &amp; Costs</div><div>Team assignments, day rates, supply costs, and payment status.</div></div></div>
+  </div>
+
+  <!-- ══ WHATSAPP PAGE (placeholder) ══ -->
+  <div id="page-whatsapp" style="display:none;flex:1;overflow:hidden;flex-direction:column;">
+    <div class="page-header"><h2>WhatsApp</h2><span class="month">Scheduler</span></div>
+    <div style="padding:20px 28px;flex:1;overflow-y:auto;"><div style="background:white;border-radius:12px;border:1px solid var(--border);padding:24px;text-align:center;color:var(--text-light);font-size:13px;"><div style="font-size:32px;margin-bottom:8px;">💬</div><div style="font-weight:600;font-size:15px;color:var(--dark);margin-bottom:6px;">WhatsApp Scheduler</div><div>Schedule messages using pre-saved templates or custom messages.<br>Auto-sends via WATI + Zapier integration.</div></div></div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- ══ NEW BOOKING MODAL ══ -->
+<div class="modal-overlay" id="modal-booking">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>New Booking</h3>
+      <button class="modal-close" onclick="closeModal('booking')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="section-title">Client Information</div>
+      <div class="form-row">
+        <div class="form-group"><label>Client Name</label><input type="text" placeholder="e.g. Sara Al-Mansoori"/></div>
+        <div class="form-group"><label>Phone Number</label><input type="tel" placeholder="+974 XXXX XXXX"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>WhatsApp Number</label><input type="tel" placeholder="+974 XXXX XXXX"/></div>
+        <div class="form-group"><label>Email</label><input type="email" placeholder="client@email.com"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Location / Area</label><input type="text" placeholder="e.g. The Pearl, Lusail"/></div>
+        <div class="form-group"><label>Referral Source</label>
+          <select><option>Instagram</option><option>Word of Mouth</option><option>Returning Client</option><option>Other</option></select>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:8px;">Booking Details</div>
+      <div class="form-row">
+        <div class="form-group"><label>Service Type</label>
+          <select><option>Full Day</option><option>Half Day</option><option>Consultation</option><option>Follow-up</option></select>
+        </div>
+        <div class="form-group"><label>Status</label>
+          <select><option>Lead</option><option>Consultation Booked</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Booking Date</label><input type="date"/></div>
+        <div class="form-group"><label>Service Date</label><input type="date"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Assigned Team Member</label><input type="text" placeholder="e.g. Fatima"/></div>
+      </div>
+
+      <div class="section-title" style="margin-top:8px;">Financials (QAR)</div>
+      <div class="form-row">
+        <div class="form-group"><label>Consultation Fee</label><input type="number" placeholder="0"/></div>
+        <div class="form-group"><label>Service Quote</label><input type="number" placeholder="0"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>50% Deposit</label><input type="number" placeholder="0"/></div>
+        <div class="form-group"><label>Balance Due</label><input type="number" placeholder="0"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex-direction:row;align-items:center;gap:8px;padding-top:4px;">
+          <input type="checkbox" id="depositPaid" style="width:16px;height:16px;accent-color:var(--pink)"/>
+          <label for="depositPaid" style="text-transform:none;font-size:13px;color:var(--text)">Deposit Paid</label>
+        </div>
+        <div class="form-group" style="flex-direction:row;align-items:center;gap:8px;padding-top:4px;">
+          <input type="checkbox" id="balancePaid" style="width:16px;height:16px;accent-color:var(--pink)"/>
+          <label for="balancePaid" style="text-transform:none;font-size:13px;color:var(--text)">Balance Paid</label>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:8px;">Notes</div>
+      <div class="form-group"><textarea placeholder="Any additional notes about this client or booking..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('booking')">Cancel</button>
+      <button class="btn-save">Save Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PERSONAL ENTRY MODAL ══ -->
+<div class="modal-overlay" id="modal-personal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Personal Entry / Reminder</h3>
+      <button class="modal-close" onclick="closeModal('personal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Title</label><input type="text" placeholder="e.g. Monthly Review, Day Off..."/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Date</label><input type="date"/></div>
+        <div class="form-group"><label>Type</label>
+          <select><option>Personal Reminder</option><option>Day Off</option><option>Meeting</option><option>Admin Task</option><option>Other</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea placeholder="Optional notes..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('personal')">Cancel</button>
+      <button class="btn-save">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SEND REMINDER MODAL ══ -->
+<div class="modal-overlay" id="modal-send-reminder">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Send Reminder</h3>
+      <button class="modal-close" onclick="closeModal('send-reminder')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Client Name</label><input type="text" value="Sara Al-Mansoori"/></div>
+        <div class="form-group"><label>WhatsApp Number</label><input type="tel" value="+974 XXXX XXXX"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Reminder Type</label>
+          <select><option>Service — 1 Day</option><option>50% Balance Morning</option><option>Consultation Payment</option><option>50% Deposit Request</option><option>Thank You &amp; Feedback</option><option>Custom Message</option></select>
+        </div>
+        <div class="form-group"><label>Schedule Send</label><input type="datetime-local"/></div>
+      </div>
+      <div class="form-group"><label>Message</label><textarea placeholder="Type your message or select a template above..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('send-reminder')">Cancel</button>
+      <button class="btn-save">Schedule Message</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Date ──
+  const now = new Date();
+  const opts = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
+  document.getElementById('today-date').textContent = now.toLocaleDateString('en-GB', opts);
+
+  // ── Navigation ──
+  const pages = ['overview','clients','calendar','reminders','revenue','transport','teams','whatsapp'];
+  function showPage(name) {
+    pages.forEach(p => {
+      const el = document.getElementById('page-'+p);
+      if (el) el.style.display = p === name ? 'flex' : 'none';
+    });
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+  }
+
+  // ── CLIENTS & BOOKINGS DATA & LOGIC ──
+
+  // ── DEFAULT DEMO DATA ──
+  const DEFAULT_CLIENTS = [
+    { id:1,  name:'Sara Al-Mansoori', initials:'SA', phone:'974 55001001', area:'The Pearl',       maps:'', svcType:'Service Day',            duration:'Full Day', dates:['2026-04-10'], transport:0,   price:2200, deposit:1100, balance:1100, depositPaid:true,  balancePaid:false, lang:'English', notes:'Focus on kitchen & wardrobes', status:'Service Day',    reminders:[{sent:true},{sent:true},{sent:true},{sent:false},{sent:false},{sent:false}] },
+    { id:2,  name:'Layla Hassan',      initials:'LH', phone:'974 55001002', area:'Lusail',           maps:'', svcType:'Consultation Appointment', duration:'Hourly',   dates:['2026-04-11'], transport:0,   price:300,  deposit:150,  balance:150,  depositPaid:true,  balancePaid:false, lang:'Arabic',   notes:'', status:'Consultation',  reminders:[{sent:true},{sent:true},{sent:false},{sent:false},{sent:false},{sent:false}] },
+    { id:3,  name:'Noura Al-Thani',    initials:'NA', phone:'974 55001003', area:'West Bay',         maps:'', svcType:'Service Day',            duration:'Half Day', dates:['2026-04-12'], transport:0,   price:1400, deposit:700,  balance:700,  depositPaid:true,  balancePaid:false, lang:'Arabic',   notes:'', status:'Service Day',    reminders:[{sent:true},{sent:true},{sent:true},{sent:true},{sent:false},{sent:false}] },
+    { id:4,  name:'Reem Al-Nasr',      initials:'RA', phone:'974 55001004', area:'Madinat Khalifa',  maps:'', svcType:'Service Day',            duration:'Full Day', dates:['2026-04-13'], transport:150, price:2400, deposit:1200, balance:1200, depositPaid:false, balancePaid:false, lang:'English', notes:'', status:'Scheduled',     reminders:[{sent:true},{sent:false},{sent:false},{sent:false},{sent:false},{sent:false}] },
+    { id:5,  name:'Fatima Al-Kuwari',  initials:'FA', phone:'974 55001005', area:'Al Waab',          maps:'', svcType:'Service Day',            duration:'Full Day', dates:['2026-04-14'], transport:0,   price:2200, deposit:1100, balance:1100, depositPaid:false, balancePaid:false, lang:'Arabic',   notes:'Proposal pending review', status:'Proposal',     reminders:[{sent:true},{sent:false},{sent:false},{sent:false},{sent:false},{sent:false}] },
+    { id:6,  name:'Mariam Jaber',      initials:'MJ', phone:'974 55001006', area:'The Pearl',        maps:'', svcType:'Service Day',            duration:'Full Day', dates:['2026-04-15'], transport:0,   price:2600, deposit:1300, balance:1300, depositPaid:true,  balancePaid:false, lang:'English', notes:'', status:'Service Day',    reminders:[{sent:true},{sent:true},{sent:true},{sent:true},{sent:true},{sent:false}] },
+    { id:7,  name:'Hessa Al-Marri',    initials:'HA', phone:'974 55001007', area:'Al Rayyan',        maps:'', svcType:'Service Day',            duration:'Full Day', dates:['2026-04-16'], transport:0,   price:2600, deposit:1300, balance:1300, depositPaid:true,  balancePaid:true,  lang:'Arabic',   notes:'', status:'End of Service', reminders:[{sent:true},{sent:true},{sent:true},{sent:true},{sent:true},{sent:true}] },
+    { id:8,  name:'Aisha Al-Emadi',    initials:'AA', phone:'974 55001008', area:'Lusail',           maps:'', svcType:'Consultation Appointment', duration:'Hourly', dates:['2026-04-17'], transport:0,   price:300,  deposit:150,  balance:150,  depositPaid:true,  balancePaid:false, lang:'Arabic',   notes:'', status:'Consultation',  reminders:[{sent:true},{sent:true},{sent:false},{sent:false},{sent:false},{sent:false}] },
+    { id:9,  name:'Dana Al-Fardan',    initials:'DA', phone:'974 55001009', area:'Al Thumama',       maps:'', svcType:'Service Day',            duration:'Full Day', dates:['2026-04-19'], transport:200, price:2400, deposit:1200, balance:1200, depositPaid:true,  balancePaid:false, lang:'English', notes:'', status:'Service Day',    reminders:[{sent:true},{sent:true},{sent:true},{sent:false},{sent:false},{sent:false}] },
+    { id:10, name:'Maha Al-Sulaiti',   initials:'MA', phone:'974 55001010', area:'The Pearl',        maps:'', svcType:'Service Day',            duration:'Full Day', dates:['2026-04-20'], transport:0,   price:2200, deposit:1100, balance:1100, depositPaid:false, balancePaid:false, lang:'Arabic',   notes:'', status:'Service Day',    reminders:[{sent:true},{sent:false},{sent:false},{sent:false},{sent:false},{sent:false}] },
+  ];
+
+  // ── LOAD FROM LOCALSTORAGE (persists data across sessions) ──
+  function loadData() {
+    try {
+      const saved = localStorage.getItem('spacemakers_clients');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch(e) {}
+    return DEFAULT_CLIENTS.map(c => ({...c, reminders: c.reminders.map(r=>({...r}))}));
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem('spacemakers_clients', JSON.stringify(clientsData));
+      // Flash the "Saved" indicator
+      const ind = document.getElementById('save-indicator');
+      if (ind) { ind.style.opacity = '1'; setTimeout(() => ind.style.opacity = '0', 2000); }
+    } catch(e) {}
+  }
+
+  let clientsData = loadData();
+
+  let activeFilter = 'ALL';
+
+  function svcTagClass(status) {
+    if (status==='Service Day') return 'svc-service';
+    if (status==='Consultation') return 'svc-consult';
+    if (status==='Scheduled')   return 'svc-scheduled';
+    if (status==='Proposal')    return 'svc-proposal';
+    if (status==='End of Service') return 'svc-end';
+    return 'svc-consult';
+  }
+
+  const REMINDER_LABELS = [
+    { short: 'Deposit',    full: 'Confirm Booking & Secure Deposit',       when: 'After consultation' },
+    { short: 'Proposal',   full: 'Follow-up on Proposal & Shopping Fee',   when: 'After sending proposal' },
+    { short: '3 Days',     full: 'Service Reminder — 3 Days Before',       when: '3 days before service' },
+    { short: '1 Day',      full: 'Service Reminder — 1 Day Before',        when: '1 day before service' },
+    { short: 'Balance',    full: 'Remaining Balance Due',                   when: 'Morning of service day' },
+    { short: 'Feedback',   full: 'End of Service Feedback',                 when: 'After service completed' },
+  ];
+
+  function renderClients() {
+    saveData(); // ── Auto-save every time the list changes ──
+    const body = document.getElementById('clients-table-body');
+    const filtered = activeFilter === 'ALL' ? clientsData : clientsData.filter(c => c.status === activeFilter);
+    document.getElementById('client-count').textContent = filtered.length + ' client' + (filtered.length!==1?'s':'');
+
+    body.innerHTML = filtered.map((c) => {
+      const sentCount = c.reminders.filter(r=>r.sent).length;
+
+      const reminderCells = c.reminders.map((r, i) => {
+        if (r.sent) {
+          return `<div class="tracker-cell" onclick="event.stopPropagation();toggleReminder(${c.id},${i})" title="✓ Sent — click to undo">
+            <span class="rstatus rstatus-sent">✓ Sent</span>
+          </div>`;
+        } else {
+          return `<div class="tracker-cell" onclick="event.stopPropagation();toggleReminder(${c.id},${i})" title="Not sent — click to mark sent">
+            <span class="rstatus rstatus-pending">Pending</span>
+          </div>`;
+        }
+      }).join('');
+
+      return `
+      <div class="tracker-row" onclick="openReminderPanel(${c.id})">
+        <div class="tc-client">
+          <div class="client-avatar">${c.initials}</div>
+          <div style="min-width:0;">
+            <div style="font-size:14px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.name}</div>
+            <div style="font-size:10px;color:var(--text-xlight);">${c.area}</div>
+          </div>
+        </div>
+        <div class="tc-svc"><span class="svc-tag ${svcTagClass(c.status)}">${c.status}</span></div>
+        <div class="tc-date">
+          <div style="font-size:13px;font-weight:800;color:var(--dark);">${formatDate(c.dates[0])}</div>
+        </div>
+        ${reminderCells}
+        <div class="tc-edit">
+          <button class="cb-edit-btn" onclick="event.stopPropagation();editClient(${c.id})">EDIT</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleReminder(clientId, reminderIdx) {
+    const c = clientsData.find(x=>x.id===clientId);
+    if (!c) return;
+    c.reminders[reminderIdx].sent = !c.reminders[reminderIdx].sent;
+    renderClients();
+    if (document.getElementById('reminder-panel').dataset.clientId == clientId) {
+      openReminderPanel(clientId);
+    }
+  }
+
+  function formatDate(d) {
+    if (!d) return '—';
+    const dt = new Date(d);
+    return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  }
+
+  function filterClients(filter, btn) {
+    activeFilter = filter;
+    document.querySelectorAll('.cb-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderClients();
+  }
+
+  // ── Duration change: auto-switch price type ──
+  // Duration radio no longer controls price type — price type has its own radios
+  function onDurationChange(dur) { calcFinancials(); }
+
+  // ── Price type toggle ──
+  function onPriceTypeChange(type) {
+    document.getElementById('price-fullday').style.display = type==='fullday' ? 'block' : 'none';
+    document.getElementById('price-halfday').style.display = type==='halfday' ? 'block' : 'none';
+    document.getElementById('price-hourly').style.display  = type==='hourly'  ? 'block' : 'none';
+    calcFinancials();
+  }
+
+  // ── Calc financials ──
+  function calcFinancials() {
+    const ptype = document.querySelector('input[name="pricetype"]:checked')?.value || 'fullday';
+    let serviceTotal = 0;
+    let formula = '';
+
+    if (ptype === 'fullday') {
+      const rate = parseFloat(document.getElementById('f-rate-fullday').value)||0;
+      const days = parseInt(document.getElementById('f-num-fulldays').value)||1;
+      serviceTotal = rate * days;
+      formula = rate > 0 ? `QAR ${rate.toLocaleString()} × ${days} day${days!==1?'s':''} = QAR ${serviceTotal.toLocaleString()}` : '—';
+    } else if (ptype === 'halfday') {
+      const rate = parseFloat(document.getElementById('f-rate-halfday').value)||0;
+      const num  = parseInt(document.getElementById('f-num-halfdays').value)||1;
+      serviceTotal = rate * num;
+      formula = rate > 0 ? `QAR ${rate.toLocaleString()} × ${num} half day${num!==1?'s':''} = QAR ${serviceTotal.toLocaleString()}` : '—';
+    } else if (ptype === 'hourly') {
+      const rate  = parseFloat(document.getElementById('f-rate-hour').value)||0;
+      const hours = parseFloat(document.getElementById('f-num-hours').value)||1;
+      serviceTotal = rate * hours;
+      formula = rate > 0 ? `QAR ${rate.toLocaleString()} × ${hours} hr${hours!==1?'s':''} = QAR ${serviceTotal.toLocaleString()}` : '—';
+    }
+
+    const transport  = parseFloat(document.getElementById('f-transport').value)||0;
+    const grandTotal = serviceTotal + transport;
+    const deposit    = grandTotal * 0.5;
+    const balance    = grandTotal * 0.5;
+
+    // Update the dark breakdown panel
+    document.getElementById('price-formula').textContent        = formula;
+    document.getElementById('calc-total-display').textContent   = 'QAR ' + grandTotal.toLocaleString();
+    document.getElementById('calc-deposit-display').textContent = 'QAR ' + deposit.toLocaleString();
+    document.getElementById('calc-balance-display').textContent = 'QAR ' + balance.toLocaleString();
+
+    // Store in hidden fields for saving
+    document.getElementById('f-deposit').value = deposit;
+    document.getElementById('f-balance').value = balance;
+  }
+
+  // ── Date inputs ──
+  let randomDates = [];
+
+  function toggleDateInputs(type) {
+    document.getElementById('date-single').style.display      = type==='single'      ? 'block' : 'none';
+    document.getElementById('date-consecutive').style.display = type==='consecutive' ? 'block' : 'none';
+    document.getElementById('date-random').style.display      = type==='random'      ? 'block' : 'none';
+    updateDatesPreview();
+  }
+
+  function addRandomDate(input) {
+    const val = input.value;
+    if (!val || randomDates.includes(val)) { input.value=''; return; }
+    randomDates.push(val);
+    renderRandomChips();
+    input.value = '';
+    updateDatesPreview();
+  }
+
+  function removeRandomDate(val) {
+    randomDates = randomDates.filter(d => d !== val);
+    renderRandomChips();
+    updateDatesPreview();
+  }
+
+  function renderRandomChips() {
+    const wrap = document.getElementById('random-dates-chips');
+    wrap.innerHTML = randomDates.sort().map(d => {
+      const dt = new Date(d);
+      const label = dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      return `<div style="background:var(--pink-pale);border:1px solid var(--pink-light);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--pink-dark);display:flex;align-items:center;gap:5px;">
+        ${label} <span onclick="removeRandomDate('${d}')" style="cursor:pointer;font-size:13px;line-height:1;color:var(--pink);">×</span>
+      </div>`;
+    }).join('');
+  }
+
+  function updateDatesPreview() {
+    const type = document.querySelector('input[name="datetype"]:checked')?.value || 'single';
+    let dates = [];
+    if (type === 'single') {
+      const v = document.getElementById('f-date-single').value;
+      if (v) dates = [v];
+    } else if (type === 'consecutive') {
+      const from = document.getElementById('f-date-from').value;
+      const to   = document.getElementById('f-date-to').value;
+      if (from && to && from <= to) {
+        let cur = new Date(from);
+        const end = new Date(to);
+        while (cur <= end) {
+          dates.push(cur.toISOString().slice(0,10));
+          cur.setDate(cur.getDate()+1);
+        }
+      }
+    } else {
+      dates = [...randomDates].sort();
+    }
+    const preview = document.getElementById('dates-preview');
+    const countEl = document.getElementById('dates-day-count');
+    if (dates.length === 0) {
+      preview.textContent = '—';
+      countEl.textContent = '';
+    } else {
+      const labels = dates.map(d => new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));
+      preview.textContent = labels.join('  ·  ');
+      countEl.textContent = `(${dates.length} day${dates.length!==1?'s':''})`;
+      // Auto-fill number of days for per-day pricing
+      const ndEl = document.getElementById('f-num-days');
+      if (ndEl) ndEl.value = dates.length;
+      calcFinancials();
+    }
+  }
+
+  // ── Get price from form ──
+  function getPriceFromForm() {
+    const ptype = document.querySelector('input[name="pricetype"]:checked')?.value || 'fullday';
+    if (ptype === 'fullday') {
+      return (parseFloat(document.getElementById('f-rate-fullday').value)||0) * (parseInt(document.getElementById('f-num-fulldays').value)||1);
+    }
+    if (ptype === 'halfday') {
+      return (parseFloat(document.getElementById('f-rate-halfday').value)||0) * (parseInt(document.getElementById('f-num-halfdays').value)||1);
+    }
+    if (ptype === 'hourly') {
+      return (parseFloat(document.getElementById('f-rate-hour').value)||0) * (parseFloat(document.getElementById('f-num-hours').value)||1);
+    }
+    return 0;
+  }
+
+  // ── Get selected dates ──
+  function getSelectedDates() {
+    const type = document.querySelector('input[name="datetype"]:checked')?.value || 'single';
+    if (type === 'single') {
+      const v = document.getElementById('f-date-single').value;
+      return v ? [v] : [];
+    } else if (type === 'consecutive') {
+      const from = document.getElementById('f-date-from').value;
+      const to   = document.getElementById('f-date-to').value;
+      if (!from || !to || from > to) return [];
+      let dates = [], cur = new Date(from), end = new Date(to);
+      while (cur <= end) { dates.push(cur.toISOString().slice(0,10)); cur.setDate(cur.getDate()+1); }
+      return dates;
+    } else {
+      return [...randomDates].sort();
+    }
+  }
+
+  // ── Save booking ──
+  let editingClientId = null;
+
+  function saveBooking() {
+    const name = document.getElementById('f-name').value.trim();
+    if (!name) { alert('Please enter a client name.'); return; }
+    const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const phone = document.getElementById('f-phone').value.trim();
+    const area  = document.getElementById('f-area').value.trim();
+    const maps        = document.getElementById('f-maps').value.trim();
+    const housenumber = document.getElementById('f-housenumber').value.trim();
+    const price = getPriceFromForm();
+    const transport = parseFloat(document.getElementById('f-transport').value)||0;
+    const grandTotal = price + transport;
+    const svcType = document.querySelector('input[name="svctype"]:checked')?.value || 'Service Day';
+    const duration = document.querySelector('input[name="duration"]:checked')?.value || 'Full Day';
+    const lang    = document.querySelector('input[name="lang"]:checked')?.value || 'English';
+    const notes   = document.getElementById('f-notes').value.trim();
+    const dates   = getSelectedDates();
+    const statusMap = { 'Service Day':'Service Day','Consultation Appointment':'Consultation','Shopping for Client':'Scheduled','Other':'Proposal' };
+    const newClient = {
+      id: clientsData.length+1, name, initials, phone, area, maps, housenumber,
+      svcType, duration, dates, transport,
+      price: grandTotal, deposit: grandTotal*0.5, balance: grandTotal*0.5,
+      depositPaid: document.getElementById('f-deposit-received').checked,
+      balancePaid: document.getElementById('f-balance-received').checked,
+      lang, notes, status: statusMap[svcType] || 'Service Day',
+      progress: [1,0,0,0,0,0]
+    };
+    clientsData.unshift(newClient);
+    renderClients();
+    const reminderTypes = ['Consultation Payment','50% Deposit Request','Service — 3 Days','Service — 1 Day','50% Balance Morning','Thank You & Feedback'];
+    alert(`✅ Booking saved for ${name}!\n\n📅 Added to Calendar: ${dates.map(d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'})).join(', ')||'No date set'}\n🔔 ${reminderTypes.length} reminders auto-created\n💬 WhatsApp messages ready to schedule`);
+    clearForm();
+  }
+
+  function scheduleBooking() {
+    const name = document.getElementById('f-name').value.trim();
+    if (!name) { alert('Please enter a client name.'); return; }
+    alert(`📌 "${name}" saved as draft. You can come back and confirm when ready.`);
+    clearForm();
+  }
+
+  function clearForm() {
+    ['f-name','f-phone','f-area','f-maps','f-housenumber','f-rate-fullday','f-num-fulldays','f-rate-halfday','f-num-halfdays',
+     'f-num-days','f-rate-hour','f-num-hours','f-transport','f-deposit','f-balance','f-notes',
+     'f-date-single','f-date-from','f-date-to'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value='';
+    });
+    document.getElementById('f-deposit-received').checked = false;
+    document.getElementById('f-balance-received').checked = false;
+    document.getElementById('dates-preview').textContent = '—';
+    document.getElementById('dates-day-count').textContent = '';
+    document.getElementById('calc-total-display').textContent   = 'QAR 0';
+    document.getElementById('calc-deposit-display').textContent = 'QAR 0';
+    document.getElementById('calc-balance-display').textContent = 'QAR 0';
+    document.getElementById('price-formula').textContent = '— × — = —';
+    randomDates = [];
+    renderRandomChips();
+    editingClientId = null;
+    document.getElementById('form-mode-title').textContent = 'New Booking';
+    document.getElementById('edit-mode-badge').style.display = 'none';
+    document.getElementById('form-action-btns').style.display = 'flex';
+    document.getElementById('form-edit-btns').style.display = 'none';
+  }
+
+  // ── Edit existing client ──
+  function editClient(id) {
+    const c = clientsData.find(x=>x.id===id);
+    if (!c) return;
+    editingClientId = id;
+    // Scroll form into view
+    showPageDirect('clients');
+
+    // Populate fields
+    document.getElementById('f-name').value  = c.name;
+    document.getElementById('f-phone').value = c.phone;
+    document.getElementById('f-area').value  = c.area;
+    document.getElementById('f-maps').value        = c.maps||'';
+    document.getElementById('f-housenumber').value = c.housenumber||'';
+    document.getElementById('f-notes').value = c.notes;
+    document.getElementById('f-transport').value = c.transport||0;
+    document.getElementById('f-deposit-received').checked = c.depositPaid;
+    document.getElementById('f-balance-received').checked = c.balancePaid;
+
+    // Service type
+    const stRadio = document.querySelector(`input[name="svctype"][value="${c.svcType}"]`);
+    if (stRadio) stRadio.checked = true;
+
+    // Duration
+    const durRadio = document.querySelector(`input[name="duration"][value="${c.duration}"]`);
+    if (durRadio) { durRadio.checked = true; }
+
+    // Price — always show as fixed when editing
+    document.querySelector('input[name="pricetype"][value="fixed"]').checked = true;
+    onPriceTypeChange('fixed');
+    document.getElementById('f-price-fixed').value = c.price||0;
+
+    // Dates
+    if (c.dates && c.dates.length === 1) {
+      document.querySelector('input[name="datetype"][value="Single"]').checked = true;
+      toggleDateInputs('single');
+      document.getElementById('f-date-single').value = c.dates[0];
+    } else if (c.dates && c.dates.length > 1) {
+      document.querySelector('input[name="datetype"][value="Random"]').checked = true;
+      toggleDateInputs('random');
+      randomDates = [...c.dates];
+      renderRandomChips();
+    }
+
+    calcFinancials();
+    updateDatesPreview();
+
+    // Switch to edit mode UI
+    document.getElementById('form-mode-title').textContent = `Editing: ${c.name}`;
+    document.getElementById('edit-mode-badge').style.display = 'inline-block';
+    document.getElementById('form-action-btns').style.display = 'none';
+    document.getElementById('form-edit-btns').style.display = 'flex';
+
+    // Scroll form to top
+    document.querySelector('#page-clients > div > div').scrollTop = 0;
+  }
+
+  function updateBooking() {
+    const c = clientsData.find(x=>x.id===editingClientId);
+    if (!c) return;
+    c.name    = document.getElementById('f-name').value.trim() || c.name;
+    c.phone   = document.getElementById('f-phone').value.trim();
+    c.area    = document.getElementById('f-area').value.trim();
+    c.maps        = document.getElementById('f-maps').value.trim();
+    c.housenumber = document.getElementById('f-housenumber').value.trim();
+    c.notes   = document.getElementById('f-notes').value.trim();
+    c.transport = parseFloat(document.getElementById('f-transport').value)||0;
+    c.depositPaid = document.getElementById('f-deposit-received').checked;
+    c.balancePaid = document.getElementById('f-balance-received').checked;
+    c.svcType  = document.querySelector('input[name="svctype"]:checked')?.value || c.svcType;
+    c.duration = document.querySelector('input[name="duration"]:checked')?.value || c.duration;
+    c.dates    = getSelectedDates().length ? getSelectedDates() : c.dates;
+    const price = getPriceFromForm();
+    if (price > 0) { c.price = price + c.transport; c.deposit = c.price*0.5; c.balance = c.price*0.5; }
+    c.initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    renderClients();
+    alert(`✅ ${c.name}'s booking has been updated.`);
+    clearForm();
+  }
+
+  function cancelEdit() {
+    clearForm();
+  }
+
+  // ── Reminder Panel ──
+  function openReminderPanel(id) {
+    const c = clientsData.find(x=>x.id===id);
+    if (!c) return;
+    const panel = document.getElementById('reminder-panel');
+    panel.dataset.clientId = id;
+    panel.style.width = '280px';
+
+    document.getElementById('rp-client-name').textContent = c.name;
+    document.getElementById('rp-client-sub').textContent = c.svcType + ' · ' + (c.dates.map(d=>formatDate(d)).join(', ')||'No date');
+
+    const REMINDER_SUBLABELS = [
+      'Send once consultation is done',
+      'Send after sending proposal/quote',
+      'Send 3 days before service date',
+      'Send 1 day before service date',
+      'Send on the morning of service day',
+      'Send after service is completed',
+    ];
+
+    document.getElementById('rp-reminders-list').innerHTML = c.reminders.map((r,i) => {
+      const lbl = REMINDER_LABELS[i];
+      const sub = REMINDER_SUBLABELS[i];
+      return `
+      <div class="rp-row">
+        <div class="rp-dot-big ${r.sent?'rp-dot-sent':'rp-dot-pending'}" onclick="toggleReminder(${c.id},${i})" title="Click to toggle">${i+1}</div>
+        <div class="rp-label">
+          <div class="rp-label-main">${lbl.full}</div>
+          <div class="rp-label-sub">${sub}</div>
+        </div>
+        <span class="rp-badge ${r.sent?'rp-badge-sent':'rp-badge-pending'}" onclick="toggleReminder(${c.id},${i})">
+          ${r.sent ? '✓ Sent' : 'Pending'}
+        </span>
+      </div>`;
+    }).join('');
+  }
+
+  function closeReminderPanel() {
+    const panel = document.getElementById('reminder-panel');
+    panel.style.width = '0';
+    panel.dataset.clientId = '';
+  }
+
+  function scheduleWhatsApp() {
+    const id = parseInt(document.getElementById('reminder-panel').dataset.clientId);
+    const c = clientsData.find(x=>x.id===id);
+    if (!c) return;
+    alert(`💬 Opening WhatsApp Scheduler for ${c.name}...\n\nGo to the WhatsApp Scheduler page to set exact send times for each message.`);
+  }
+
+  function openClientProfile(id) {
+    const c = clientsData.find(x=>x.id===id);
+    if (!c) return;
+    const dateStr = c.dates.map(d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'})).join(', ')||'No date';
+    alert(`📋 ${c.name}\n📍 ${c.area}\n📞 ${c.phone}\n💼 ${c.svcType} · ${c.duration}\n📅 ${dateStr}\n💰 QAR ${c.price.toLocaleString()} total\n   Deposit ${c.depositPaid?'✅ Received':'⏳ Pending'}\n   Balance ${c.balancePaid?'✅ Received':'⏳ Pending'}\n🗣 ${c.lang}\n📝 ${c.notes||'No notes'}`);
+  }
+
+  function showPageDirect(name) {
+    pages.forEach(p => {
+      const el = document.getElementById('page-'+p);
+      if (el) el.style.display = p === name ? 'flex' : 'none';
+    });
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navItems = document.querySelectorAll('.nav-item');
+    const idx = pages.indexOf(name);
+    if (navItems[idx]) navItems[idx].classList.add('active');
+  }
+
+  // ── Export to Excel (CSV) ──
+  function exportClients() {
+    const headers = ['ID','Name','Phone','Area','Service Type','Duration','Date','Price (QAR)','Deposit (QAR)','Balance (QAR)','Deposit Paid','Balance Paid','Language','Status','Notes'];
+    const rows = clientsData.map(c => [
+      c.id, c.name, c.phone, c.area, c.svcType, c.duration,
+      c.dates[0]||'', c.price, c.deposit, c.balance,
+      c.depositPaid?'Yes':'No', c.balancePaid?'Yes':'No',
+      c.lang, c.status, c.notes
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'SpaceMakers_Clients_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  // ── Import from Excel/CSV ──
+  function importClients(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim().toLowerCase());
+      let imported = 0;
+      for (let i=1; i<lines.length; i++) {
+        const vals = lines[i].split(',').map(v => v.replace(/^"|"$/g,'').trim());
+        const obj = {};
+        headers.forEach((h,idx) => obj[h] = vals[idx]||'');
+        if (!obj['name'] && !obj['client name']) continue;
+        const name = obj['name'] || obj['client name'] || 'Unknown';
+        const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+        clientsData.push({
+          id: clientsData.length+1, name, initials,
+          phone: obj['phone']||obj['phone number']||'',
+          area: obj['area']||obj['location']||'',
+          maps:'',
+          svcType: obj['service type']||'Service Day',
+          duration: obj['duration']||'Full Day',
+          dates: obj['date'] ? [obj['date']] : [],
+          transport: parseFloat(obj['transport']||0),
+          price: parseFloat(obj['price (qar)']||obj['price']||0),
+          deposit: parseFloat(obj['deposit (qar)']||obj['deposit']||0),
+          balance: parseFloat(obj['balance (qar)']||obj['balance']||0),
+          depositPaid: (obj['deposit paid']||'').toLowerCase()==='yes',
+          balancePaid: (obj['balance paid']||'').toLowerCase()==='yes',
+          lang: obj['language']||'English',
+          notes: obj['notes']||'',
+          status: obj['status']||'Service Day',
+          progress: [1,0,0,0,0,0]
+        });
+        imported++;
+      }
+      renderClients();
+      alert(`✅ Successfully imported ${imported} client${imported!==1?'s':''} from ${file.name}`);
+      input.value='';
+    };
+    reader.readAsText(file);
+  }
+
+  // Init render
+  renderClients();
+
+  // ── Modals ──
+  function openModal(name) {
+    document.getElementById('modal-'+name).classList.add('open');
+  }
+  function closeModal(name) {
+    document.getElementById('modal-'+name).classList.remove('open');
+  }
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+  });
+
+  // ── Revenue vs Target Chart ──
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+
+  // Net revenue after deductions (actual)
+  const netRevenue  = [12400, 14200, 15800, 14400, 0];
+  // Monthly target
+  const target      = [15000, 15000, 15000, 15000, 15000];
+
+  // Colour bars: green if met target, pink if below, gray if no data yet
+  const barColors = netRevenue.map((v, i) =>
+    v === 0 ? '#f0ebe4' : v >= target[i] ? '#6daa83' : '#c9768a'
+  );
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May'],
+      datasets: [
+        {
+          label: 'Net Revenue',
+          data: netRevenue,
+          backgroundColor: barColors,
+          borderRadius: 4,
+          borderSkipped: false,
+          order: 2,
+        },
+        {
+          label: 'Monthly Target',
+          data: target,
+          type: 'line',
+          borderColor: '#b0a090',
+          borderWidth: 1.5,
+          borderDash: [4, 3],
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+          order: 1,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => {
+              if (c.dataset.label === 'Monthly Target') return 'Target: QAR ' + c.raw.toLocaleString();
+              if (c.raw === 0) return 'No data yet';
+              const diff = c.raw - target[c.dataIndex];
+              const sign = diff >= 0 ? '▲ +' : '▼ ';
+              return [`Net: QAR ${c.raw.toLocaleString()}`, `${sign}QAR ${Math.abs(diff).toLocaleString()} vs target`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Inter' }, color: '#aaa' } },
+        y: {
+          grid: { color: '#f0ebe4' },
+          ticks: { font: { size: 9, family: 'Inter' }, color: '#aaa', callback: v => 'QAR '+(v/1000)+'k' },
+          suggestedMax: 18000
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>
