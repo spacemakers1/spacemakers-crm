@@ -551,7 +551,8 @@
   </div>
   <nav class="sidebar-nav">
     <a class="nav-item active" onclick="showPage('overview')"><span class="icon">▣</span> Overview</a>
-    <a class="nav-item" onclick="showPage('clients')"><span class="icon">👥</span> Clients &amp; Bookings</a>
+    <a class="nav-item" onclick="showPage('allclients')"><span class="icon">👤</span> All Clients</a>
+    <a class="nav-item" onclick="showPage('clients')"><span class="icon">📋</span> New Booking</a>
     <a class="nav-item" onclick="showPage('calendar')"><span class="icon">📅</span> Calendar</a>
     <a class="nav-item" onclick="showPage('reminders')"><span class="icon">🔔</span> Reminders</a>
     <a class="nav-item" onclick="showPage('revenue')"><span class="icon">💰</span> Revenue</a>
@@ -986,28 +987,57 @@
         <div style="flex:1;display:flex;overflow:hidden;">
           <div style="flex:1;overflow-y:auto;" id="clients-table-body"></div>
 
-          <!-- REMINDER PANEL (slides in when client is clicked) -->
-          <div id="reminder-panel" data-client-id="" style="width:0;overflow:hidden;transition:width 0.25s ease;background:var(--white);border-left:1px solid var(--border);flex-shrink:0;">
-            <div style="width:280px;padding:0;">
-              <!-- Panel header -->
-              <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-                <div>
-                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-xlight);">Reminders</div>
-                  <div style="font-size:14px;font-weight:800;color:var(--dark);margin-top:2px;" id="rp-client-name">—</div>
-                  <div style="font-size:11px;color:var(--text-light);" id="rp-client-sub"></div>
+          <!-- CLIENT PROFILE DRAWER (slides in when client row is clicked) -->
+          <div id="reminder-panel" data-client-id="" style="width:0;overflow:hidden;transition:width 0.3s ease;background:var(--white);border-left:1px solid var(--border);flex-shrink:0;">
+            <div style="width:360px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
+
+              <!-- Drawer header: avatar + name + close -->
+              <div style="padding:16px 18px 14px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                  <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);">Client Profile</div>
+                  <button onclick="closeReminderPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-xlight);padding:2px 4px;line-height:1;">×</button>
                 </div>
-                <button onclick="closeReminderPanel()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-xlight);padding:4px;">×</button>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div id="rp-avatar" style="width:46px;height:46px;border-radius:50%;background:var(--pink);color:white;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:1px;">—</div>
+                  <div style="min-width:0;">
+                    <div style="font-size:17px;font-weight:900;color:var(--dark);letter-spacing:-0.5px;" id="rp-client-name">—</div>
+                    <div style="font-size:11px;color:var(--text-light);margin-top:2px;" id="rp-client-sub"></div>
+                    <div id="rp-repeat-badge" style="display:none;margin-top:4px;"></div>
+                  </div>
+                </div>
+                <!-- Action row -->
+                <div style="display:flex;gap:6px;margin-top:12px;">
+                  <button id="rp-edit-btn" onclick="editFromProfile()" style="flex:1;background:var(--pink);color:white;border:none;border-radius:8px;padding:8px 0;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.5px;">✏️ EDIT BOOKING</button>
+                  <button id="rp-wa-btn" onclick="scheduleWhatsApp()" style="flex:1;background:#25d366;color:white;border:none;border-radius:8px;padding:8px 0;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.5px;">💬 WHATSAPP</button>
+                  <button id="rp-del-btn" onclick="deleteFromProfile()" style="width:36px;background:var(--cream-dark);color:#c44;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-family:'Inter',sans-serif;">🗑</button>
+                </div>
               </div>
 
-              <!-- 6 reminder rows -->
-              <div id="rp-reminders-list" style="padding:8px 0;"></div>
+              <!-- Scrollable body -->
+              <div style="flex:1;overflow-y:auto;padding:14px 18px 20px;">
 
-              <!-- WhatsApp quick action -->
-              <div style="padding:12px 16px;border-top:1px solid var(--border);">
-                <div style="font-size:10px;font-weight:700;color:var(--text-xlight);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Quick Schedule</div>
-                <button onclick="scheduleWhatsApp()" style="width:100%;background:#25d366;color:white;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;">
-                  💬 Schedule WhatsApp Messages
-                </button>
+                <!-- Contact & location info -->
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);margin-bottom:8px;">Contact Details</div>
+                <div id="rp-contact-info" style="background:var(--cream);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;line-height:1.9;color:var(--text);"></div>
+
+                <!-- Booking history -->
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);margin-bottom:8px;">Booking History</div>
+                <div id="rp-booking-history" style="margin-bottom:14px;"></div>
+
+                <!-- Financials -->
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);margin-bottom:8px;">Financials</div>
+                <div id="rp-financials" style="background:var(--cream);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;"></div>
+
+                <!-- Reminders -->
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);margin-bottom:8px;">Reminders</div>
+                <div id="rp-reminders-list" style="margin-bottom:14px;"></div>
+
+                <!-- Notes -->
+                <div id="rp-notes-wrap" style="display:none;">
+                  <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);margin-bottom:6px;">Notes</div>
+                  <div id="rp-notes" style="background:var(--cream);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:14px;"></div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -1015,6 +1045,22 @@
 
       </div>
     </div>
+  </div>
+
+  <!-- ══ ALL CLIENTS PAGE ══ -->
+  <div id="page-allclients" style="display:none;flex:1;overflow:hidden;flex-direction:column;">
+    <div style="padding:18px 28px 0;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0;">
+      <div style="font-size:11px;color:var(--text-xlight);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;">Space Makers —</div>
+      <div style="display:flex;align-items:baseline;gap:10px;">
+        <h2 style="font-size:38px;font-weight:900;color:var(--dark);letter-spacing:-1.5px;">All</h2>
+        <span style="font-size:38px;font-weight:300;color:var(--pink);font-style:italic;letter-spacing:-1px;">Clients</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding-bottom:14px;margin-top:8px;">
+        <input id="allclients-search" type="text" placeholder="🔍  Search by name, area, phone..." oninput="renderAllClients()" style="flex:1;max-width:340px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;background:var(--cream);outline:none;color:var(--dark);"/>
+        <span id="allclients-count" style="font-size:12px;color:var(--text-xlight);font-weight:600;"></span>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:20px 28px;" id="allclients-body"></div>
   </div>
 
   <!-- ══ CALENDAR PAGE (placeholder) ══ -->
@@ -1186,7 +1232,7 @@
   document.getElementById('today-date').textContent = now.toLocaleDateString('en-GB', opts);
 
   // ── Navigation ──
-  const pages = ['overview','clients','calendar','reminders','revenue','transport','teams','whatsapp'];
+  const pages = ['overview','allclients','clients','calendar','reminders','revenue','transport','teams','whatsapp'];
   function showPage(name) {
     pages.forEach(p => {
       const el = document.getElementById('page-'+p);
@@ -1194,6 +1240,7 @@
     });
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     event.currentTarget.classList.add('active');
+    if (name === 'allclients') renderAllClients();
   }
 
   // ── CLIENTS & BOOKINGS DATA & LOGIC ──
@@ -1429,6 +1476,7 @@
   function renderClients() {
     saveData(); // ── Auto-save every time the list changes ──
     renderOverview(); // ── Keep Overview in sync ──
+    renderAllClients(); // ── Keep All Clients page in sync ──
     const body = document.getElementById('clients-table-body');
     const filtered = activeFilter === 'ALL' ? clientsData : clientsData.filter(c => c.status === activeFilter);
     document.getElementById('client-count').textContent = filtered.length + ' client' + (filtered.length!==1?'s':'');
@@ -1800,19 +1848,22 @@
     const c = clientsData.find(x=>x.id===id);
     if (!c) return;
     editingClientId = id;
-    // Scroll form into view
+    // Navigate to New Booking form
     showPageDirect('clients');
 
-    // Populate fields
-    document.getElementById('f-name').value  = c.name;
-    document.getElementById('f-phone').value = c.phone;
-    document.getElementById('f-area').value  = c.area;
-    document.getElementById('f-maps').value        = c.maps||'';
-    document.getElementById('f-housenumber').value = c.housenumber||'';
-    document.getElementById('f-notes').value = c.notes;
-    document.getElementById('f-transport').value = c.transport||0;
-    document.getElementById('f-deposit-received').checked = c.depositPaid;
-    document.getElementById('f-balance-received').checked = c.balancePaid;
+    // Populate basic fields
+    document.getElementById('f-name').value        = c.name;
+    document.getElementById('f-phone').value       = c.phone || '';
+    document.getElementById('f-area').value        = c.area || '';
+    document.getElementById('f-maps').value        = c.maps || '';
+    document.getElementById('f-housenumber').value = c.housenumber || '';
+    document.getElementById('f-notes').value       = c.notes || '';
+    document.getElementById('f-deposit-received').checked = c.depositPaid || false;
+    document.getElementById('f-balance-received').checked = c.balancePaid || false;
+
+    // Language
+    const langRadio = document.querySelector(`input[name="lang"][value="${c.lang}"]`);
+    if (langRadio) langRadio.checked = true;
 
     // Service type
     const stRadio = document.querySelector(`input[name="svctype"][value="${c.svcType}"]`);
@@ -1820,20 +1871,30 @@
 
     // Duration
     const durRadio = document.querySelector(`input[name="duration"][value="${c.duration}"]`);
-    if (durRadio) { durRadio.checked = true; }
+    if (durRadio) durRadio.checked = true;
 
-    // Price — always show as fixed when editing
-    document.querySelector('input[name="pricetype"][value="fixed"]').checked = true;
-    onPriceTypeChange('fixed');
-    document.getElementById('f-price-fixed').value = c.price||0;
+    // Load line-item pricing from saved priceLines
+    priceLines = c.priceLines ? JSON.parse(JSON.stringify(c.priceLines)) : [];
+    lineIdCounter = priceLines.length > 0 ? Math.max(...priceLines.map(l=>l.id||0)) : 0;
+    renderPriceLines();
+
+    // Overtime
+    if (c.isOvertime) {
+      const otRadio = document.querySelector('input[name="overtime"][value="Overtime"]');
+      if (otRadio) { otRadio.checked = true; toggleOvertimeHours(true); }
+      if (c.otHours) document.getElementById('f-overtime-hours').value = c.otHours;
+      if (c.otRate)  document.getElementById('f-overtime-rate').value  = c.otRate;
+    }
 
     // Dates
     if (c.dates && c.dates.length === 1) {
-      document.querySelector('input[name="datetype"][value="Single"]').checked = true;
+      const singleRadio = document.querySelector('input[name="datetype"][value="Single"]');
+      if (singleRadio) singleRadio.checked = true;
       toggleDateInputs('single');
       document.getElementById('f-date-single').value = c.dates[0];
     } else if (c.dates && c.dates.length > 1) {
-      document.querySelector('input[name="datetype"][value="Random"]').checked = true;
+      const randomRadio = document.querySelector('input[name="datetype"][value="Random"]');
+      if (randomRadio) randomRadio.checked = true;
       toggleDateInputs('random');
       randomDates = [...c.dates];
       renderRandomChips();
@@ -1849,28 +1910,39 @@
     document.getElementById('form-edit-btns').style.display = 'flex';
 
     // Scroll form to top
-    document.querySelector('#page-clients > div > div').scrollTop = 0;
+    const formPanel = document.querySelector('#page-clients > div:last-child > div:first-child');
+    if (formPanel) formPanel.scrollTop = 0;
+    setTimeout(() => { const nameField = document.getElementById('f-name'); if (nameField) nameField.focus(); }, 50);
   }
 
   function updateBooking() {
     const c = clientsData.find(x=>x.id===editingClientId);
     if (!c) return;
-    c.name    = document.getElementById('f-name').value.trim() || c.name;
-    c.phone   = document.getElementById('f-phone').value.trim();
-    c.area    = document.getElementById('f-area').value.trim();
+    c.name        = document.getElementById('f-name').value.trim() || c.name;
+    c.phone       = document.getElementById('f-phone').value.trim();
+    c.area        = document.getElementById('f-area').value.trim();
     c.maps        = document.getElementById('f-maps').value.trim();
     c.housenumber = document.getElementById('f-housenumber').value.trim();
-    c.notes   = document.getElementById('f-notes').value.trim();
-    c.transport = parseFloat(document.getElementById('f-transport').value)||0;
+    c.notes       = document.getElementById('f-notes').value.trim();
     c.depositPaid = document.getElementById('f-deposit-received').checked;
     c.balancePaid = document.getElementById('f-balance-received').checked;
-    c.svcType  = document.querySelector('input[name="svctype"]:checked')?.value || c.svcType;
-    c.duration = document.querySelector('input[name="duration"]:checked')?.value || c.duration;
-    c.dates    = getSelectedDates().length ? getSelectedDates() : c.dates;
-    const price = getPriceFromForm();
-    if (price > 0) { c.price = price + c.transport; c.deposit = c.price*0.5; c.balance = c.price*0.5; }
-    c.initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    c.svcType     = document.querySelector('input[name="svctype"]:checked')?.value || c.svcType;
+    c.duration    = document.querySelector('input[name="duration"]:checked')?.value || c.duration;
+    c.lang        = document.querySelector('input[name="lang"]:checked')?.value || c.lang;
+    c.isOvertime  = document.querySelector('input[name="overtime"]:checked')?.value === 'Overtime';
+    c.otHours     = parseFloat(document.getElementById('f-overtime-hours')?.value)||0;
+    c.otRate      = parseFloat(document.getElementById('f-overtime-rate')?.value)||0;
+    const newDates = getSelectedDates();
+    if (newDates.length) c.dates = newDates;
+    // Save current price lines
+    c.priceLines = JSON.parse(JSON.stringify(priceLines));
+    const totalStr = document.getElementById('calc-total-display').textContent.replace(/[^0-9.]/g,'');
+    const newPrice = parseFloat(totalStr)||0;
+    if (newPrice > 0) { c.price = newPrice; c.deposit = newPrice*0.5; c.balance = newPrice*0.5; }
+    c.initials = c.name.split(' ').filter(Boolean).map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    c.status = statusMap[c.svcType] || c.status;
     renderClients();
+    renderAllClients();
     alert(`✅ ${c.name}'s booking has been updated.`);
     clearForm();
   }
@@ -1879,27 +1951,99 @@
     clearForm();
   }
 
-  // ── Reminder Panel ──
+  // ── Client Profile Drawer ──
+  const REMINDER_SUBLABELS = [
+    'Send once consultation is done',
+    'Send after sending proposal/quote',
+    'Send 3 days before service date',
+    'Send 1 day before service date',
+    'Send on the morning of service day',
+    'Send after service is completed',
+  ];
+
   function openReminderPanel(id) {
     const c = clientsData.find(x=>x.id===id);
     if (!c) return;
     const panel = document.getElementById('reminder-panel');
     panel.dataset.clientId = id;
-    panel.style.width = '280px';
+    panel.style.width = '360px';
 
+    // Avatar
+    document.getElementById('rp-avatar').textContent = c.initials || c.name.slice(0,2).toUpperCase();
+
+    // Name + sub
     document.getElementById('rp-client-name').textContent = c.name;
-    document.getElementById('rp-client-sub').textContent = c.svcType + ' · ' + (c.dates.map(d=>formatDate(d)).join(', ')||'No date');
+    document.getElementById('rp-client-sub').textContent = c.area + (c.phone ? ' · ' + c.phone : '');
 
-    const REMINDER_SUBLABELS = [
-      'Send once consultation is done',
-      'Send after sending proposal/quote',
-      'Send 3 days before service date',
-      'Send 1 day before service date',
-      'Send on the morning of service day',
-      'Send after service is completed',
-    ];
+    // Repeat client badge — check how many bookings this person has
+    const allBookings = clientsData.filter(x => x.name.trim().toLowerCase() === c.name.trim().toLowerCase());
+    const repeatBadge = document.getElementById('rp-repeat-badge');
+    if (allBookings.length > 1) {
+      repeatBadge.style.display = 'inline-block';
+      repeatBadge.innerHTML = `<span style="background:#e8f7ee;color:#2e7d52;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:0.5px;">⭐ REPEAT CLIENT · ${allBookings.length} bookings</span>`;
+    } else {
+      repeatBadge.style.display = 'none';
+    }
 
-    document.getElementById('rp-reminders-list').innerHTML = c.reminders.map((r,i) => {
+    // Contact details
+    document.getElementById('rp-contact-info').innerHTML = [
+      c.phone    ? `📞 ${c.phone}` : '',
+      c.area     ? `📍 ${c.area}` : '',
+      c.housenumber ? `🏠 ${c.housenumber}` : '',
+      c.maps     ? `<a href="${c.maps}" target="_blank" style="color:var(--pink);text-decoration:none;">🗺 View on Maps</a>` : '',
+      c.lang     ? `🗣 ${c.lang}` : '',
+    ].filter(Boolean).join('<br>') || '<span style="color:var(--text-xlight);">No contact info</span>';
+
+    // Booking history — all bookings by this client name, sorted newest first
+    const historyHtml = allBookings.sort((a,b) => {
+      const da = a.dates && a.dates[0] ? a.dates[0] : '';
+      const db = b.dates && b.dates[0] ? b.dates[0] : '';
+      return db.localeCompare(da);
+    }).map(bk => {
+      const isCurrentBooking = bk.id === c.id;
+      const dateStr = bk.dates.map(d=>formatDate(d)).join(', ') || 'No date';
+      const priceLinesHtml = (bk.priceLines||[]).map(l => {
+        const lbl = {fullday:'Full Day',halfday:'Half Day',hourly:'Hourly',transport:'Transport'}[l.type]||l.type;
+        return `<span style="font-size:10px;background:var(--cream);border:1px solid var(--border);padding:2px 7px;border-radius:20px;color:var(--text-light);">${lbl} ×${l.qty}</span>`;
+      }).join(' ');
+      return `
+      <div style="border:1px solid ${isCurrentBooking?'var(--pink-light)':'var(--border)'};border-radius:10px;padding:10px 12px;margin-bottom:8px;background:${isCurrentBooking?'var(--pink-pale)':'var(--white)'};">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="svc-tag ${svcTagClass(bk.status)}" style="font-size:9px;">${bk.status}</span>
+            ${isCurrentBooking ? '<span style="font-size:9px;font-weight:700;color:var(--pink);letter-spacing:0.5px;">THIS BOOKING</span>' : ''}
+          </div>
+          <button onclick="event.stopPropagation();editClient(${bk.id})" style="background:var(--pink-pale);color:var(--pink-dark);border:none;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">EDIT</button>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--dark);">${dateStr}</div>
+        <div style="font-size:11px;color:var(--text-light);margin:3px 0;">${bk.svcType}${bk.duration?' · '+bk.duration:''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;">${priceLinesHtml}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:7px;padding-top:7px;border-top:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:800;color:var(--dark);">QAR ${(bk.price||0).toLocaleString()}</div>
+          <div style="display:flex;gap:6px;">
+            <span style="font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;${bk.depositPaid?'background:#e8f7ee;color:#2e7d52;':'background:#fff3e0;color:#b85c00;'}">${bk.depositPaid?'✓ Deposit':'⏳ Deposit'}</span>
+            <span style="font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;${bk.balancePaid?'background:#e8f7ee;color:#2e7d52;':'background:#fff3e0;color:#b85c00;'}">${bk.balancePaid?'✓ Balance':'⏳ Balance'}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('rp-booking-history').innerHTML = historyHtml || '<div style="font-size:12px;color:var(--text-xlight);">No bookings yet</div>';
+
+    // Financials summary for this booking
+    const totalSpent = allBookings.reduce((s,bk)=>s+(bk.price||0),0);
+    const totalDeposits = allBookings.filter(bk=>bk.depositPaid).reduce((s,bk)=>s+(bk.deposit||0),0);
+    const totalBalance = allBookings.filter(bk=>bk.balancePaid).reduce((s,bk)=>s+(bk.balance||0),0);
+    const outstanding = allBookings.reduce((s,bk)=>s+(!bk.depositPaid?(bk.deposit||0):0)+(!bk.balancePaid?(bk.balance||0):0),0);
+    document.getElementById('rp-financials').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-xlight);">Total Booked</div><div style="font-size:15px;font-weight:900;color:var(--dark);">QAR ${totalSpent.toLocaleString()}</div></div>
+        <div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-xlight);">Outstanding</div><div style="font-size:15px;font-weight:900;color:${outstanding>0?'#b85c00':'#2e7d52'};">QAR ${outstanding.toLocaleString()}</div></div>
+        <div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-xlight);">Deposits Paid</div><div style="font-size:13px;font-weight:700;color:#2e7d52;">QAR ${totalDeposits.toLocaleString()}</div></div>
+        <div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-xlight);">Balances Paid</div><div style="font-size:13px;font-weight:700;color:#2e7d52;">QAR ${totalBalance.toLocaleString()}</div></div>
+      </div>`;
+
+    // Reminders for this booking
+    document.getElementById('rp-reminders-list').innerHTML = (c.reminders||[]).map((r,i) => {
       const lbl = REMINDER_LABELS[i];
       const sub = REMINDER_SUBLABELS[i];
       return `
@@ -1914,12 +2058,38 @@
         </span>
       </div>`;
     }).join('');
+
+    // Notes
+    const notesWrap = document.getElementById('rp-notes-wrap');
+    if (c.notes && c.notes.trim()) {
+      notesWrap.style.display = 'block';
+      document.getElementById('rp-notes').textContent = c.notes;
+    } else {
+      notesWrap.style.display = 'none';
+    }
   }
 
   function closeReminderPanel() {
     const panel = document.getElementById('reminder-panel');
     panel.style.width = '0';
     panel.dataset.clientId = '';
+  }
+
+  function editFromProfile() {
+    const id = parseInt(document.getElementById('reminder-panel').dataset.clientId);
+    closeReminderPanel();
+    editClient(id);
+  }
+
+  function deleteFromProfile() {
+    const id = parseInt(document.getElementById('reminder-panel').dataset.clientId);
+    const c = clientsData.find(x=>x.id===id);
+    if (!c) return;
+    if (!confirm(`Delete booking for ${c.name}?\n\nDates: ${c.dates.map(d=>formatDate(d)).join(', ')}\nThis cannot be undone.`)) return;
+    clientsData = clientsData.filter(x=>x.id!==id);
+    closeReminderPanel();
+    renderClients();
+    renderAllClients();
   }
 
   function scheduleWhatsApp() {
@@ -1930,10 +2100,94 @@
   }
 
   function openClientProfile(id) {
-    const c = clientsData.find(x=>x.id===id);
-    if (!c) return;
-    const dateStr = c.dates.map(d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'})).join(', ')||'No date';
-    alert(`📋 ${c.name}\n📍 ${c.area}\n📞 ${c.phone}\n💼 ${c.svcType} · ${c.duration}\n📅 ${dateStr}\n💰 QAR ${c.price.toLocaleString()} total\n   Deposit ${c.depositPaid?'✅ Received':'⏳ Pending'}\n   Balance ${c.balancePaid?'✅ Received':'⏳ Pending'}\n🗣 ${c.lang}\n📝 ${c.notes||'No notes'}`);
+    openReminderPanel(id);
+  }
+
+  // ── All Clients Page ──
+  function renderAllClients() {
+    const body = document.getElementById('allclients-body');
+    const countEl = document.getElementById('allclients-count');
+    if (!body) return;
+    const query = (document.getElementById('allclients-search')?.value || '').toLowerCase().trim();
+
+    // Group bookings by normalised client name
+    const grouped = {};
+    clientsData.forEach(c => {
+      const key = c.name.trim().toLowerCase();
+      if (!grouped[key]) grouped[key] = { name: c.name, initials: c.initials, bookings: [] };
+      grouped[key].bookings.push(c);
+    });
+
+    let entries = Object.values(grouped);
+    if (query) {
+      entries = entries.filter(g => {
+        const allText = g.name.toLowerCase() + ' ' +
+          g.bookings.map(b=>(b.area||'')+(b.phone||'')).join(' ').toLowerCase();
+        return allText.includes(query);
+      });
+    }
+    // Sort by most recent booking date
+    entries.sort((a,b) => {
+      const da = Math.max(...a.bookings.map(bk=>bk.dates&&bk.dates[0]?new Date(bk.dates[0]).getTime():0));
+      const db = Math.max(...b.bookings.map(bk=>bk.dates&&bk.dates[0]?new Date(bk.dates[0]).getTime():0));
+      return db - da;
+    });
+
+    countEl.textContent = entries.length + ' client' + (entries.length!==1?'s':'');
+
+    if (entries.length === 0) {
+      body.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text-xlight);"><div style="font-size:32px;margin-bottom:12px;">👤</div><div style="font-size:14px;font-weight:600;color:var(--dark);">No clients yet</div><div style="font-size:12px;margin-top:6px;">Add your first booking in New Booking</div></div>`;
+      return;
+    }
+
+    body.innerHTML = entries.map(g => {
+      const totalBookings = g.bookings.length;
+      const totalRevenue = g.bookings.reduce((s,b)=>s+(b.price||0),0);
+      const latestBooking = g.bookings.sort((a,b)=>{
+        const da = a.dates&&a.dates[0]?a.dates[0]:'';
+        const db = b.dates&&b.dates[0]?b.dates[0]:'';
+        return db.localeCompare(da);
+      })[0];
+      const latestDate = latestBooking.dates&&latestBooking.dates[0] ? formatDate(latestBooking.dates[0]) : '—';
+      const area = latestBooking.area || '';
+      const phone = latestBooking.phone || '';
+      const isRepeat = totalBookings > 1;
+      const outstanding = g.bookings.reduce((s,bk)=>
+        s+(!bk.depositPaid?(bk.deposit||0):0)+(!bk.balancePaid?(bk.balance||0):0),0);
+
+      return `
+      <div onclick="openClientProfile(${latestBooking.id})" style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s,border-color 0.15s;" onmouseenter="this.style.boxShadow='0 4px 16px rgba(201,118,138,0.12)';this.style.borderColor='var(--pink-light)'" onmouseleave="this.style.boxShadow='';this.style.borderColor='var(--border)'">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <!-- Avatar -->
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--pink);color:white;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:1px;">${g.initials||g.name.slice(0,2).toUpperCase()}</div>
+          <!-- Name + meta -->
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <div style="font-size:15px;font-weight:800;color:var(--dark);">${g.name}</div>
+              ${isRepeat ? '<span style="background:#e8f7ee;color:#2e7d52;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.5px;">⭐ REPEAT</span>' : ''}
+            </div>
+            <div style="font-size:11px;color:var(--text-light);margin-top:2px;">${[area,phone].filter(Boolean).join(' · ')}</div>
+            <div style="font-size:11px;color:var(--text-xlight);margin-top:2px;">Last booking: ${latestDate} · ${latestBooking.svcType||''}</div>
+          </div>
+          <!-- Stats -->
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:18px;font-weight:900;color:var(--dark);">QAR ${totalRevenue.toLocaleString()}</div>
+            <div style="font-size:10px;color:var(--text-xlight);margin-top:2px;">${totalBookings} booking${totalBookings!==1?'s':''}</div>
+            ${outstanding > 0 ? `<div style="font-size:10px;color:#b85c00;font-weight:700;margin-top:2px;">⏳ QAR ${outstanding.toLocaleString()} due</div>` : '<div style="font-size:10px;color:#2e7d52;font-weight:700;margin-top:2px;">✓ Fully paid</div>'}
+          </div>
+        </div>
+        <!-- All bookings mini-timeline -->
+        ${totalBookings > 1 ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;">
+          ${g.bookings.sort((a,b)=>(b.dates&&b.dates[0]?b.dates[0]:'').localeCompare(a.dates&&a.dates[0]?a.dates[0]:'')).map(bk => `
+            <div style="display:flex;align-items:center;gap:5px;background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:4px 9px;font-size:11px;" onclick="event.stopPropagation();openClientProfile(${bk.id})">
+              <span class="svc-tag ${svcTagClass(bk.status)}" style="font-size:9px;">${bk.status}</span>
+              <span style="color:var(--text-light);">${bk.dates&&bk.dates[0]?formatDate(bk.dates[0]):'—'}</span>
+              <span style="color:var(--dark);font-weight:700;">QAR ${(bk.price||0).toLocaleString()}</span>
+              <button onclick="event.stopPropagation();editClient(${bk.id})" style="background:var(--pink-pale);color:var(--pink-dark);border:none;border-radius:6px;padding:2px 6px;font-size:9px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">EDIT</button>
+            </div>`).join('')}
+        </div>` : ''}
+      </div>`;
+    }).join('');
   }
 
   function showPageDirect(name) {
@@ -1945,6 +2199,7 @@
     const navItems = document.querySelectorAll('.nav-item');
     const idx = pages.indexOf(name);
     if (navItems[idx]) navItems[idx].classList.add('active');
+    if (name === 'allclients') renderAllClients();
   }
 
   function newBooking() {
