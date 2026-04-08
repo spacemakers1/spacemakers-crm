@@ -1763,7 +1763,7 @@
   }
 
   function updateDatesPreview() {
-    const type = document.querySelector('input[name="datetype"]:checked')?.value || 'single';
+    const type = (document.querySelector('input[name="datetype"]:checked')?.value || 'Single').toLowerCase();
     let dates = [];
     if (type === 'single') {
       const v = document.getElementById('f-date-single').value;
@@ -1815,7 +1815,7 @@
 
   // ── Get selected dates ──
   function getSelectedDates() {
-    const type = document.querySelector('input[name="datetype"]:checked')?.value || 'single';
+    const type = (document.querySelector('input[name="datetype"]:checked')?.value || 'Single').toLowerCase();
     if (type === 'single') {
       const v = document.getElementById('f-date-single').value;
       return v ? [v] : [];
