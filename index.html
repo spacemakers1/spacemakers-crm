@@ -865,73 +865,26 @@
 
         <div style="border-top:1px solid var(--border);margin:14px 0 12px;"></div>
 
-        <!-- ── PRICING SECTION ── -->
-        <div style="border-top:1px solid var(--border);margin:14px 0 12px;"></div>
-        <div style="font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dark);margin-bottom:12px;">Pricing</div>
+        <!-- ── PRICING SECTION — LINE ITEMS ── -->
+        <div style="font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dark);margin-bottom:4px;">Pricing</div>
+        <div style="font-size:10px;color:var(--text-xlight);margin-bottom:12px;">Add one line per day type — mix full days, half days, hourly, transport freely.</div>
 
-        <!-- Step 1: Choose service rate type -->
-        <div class="cb-field-label">How is this service priced?</div>
-        <div class="cb-check-row" style="margin-bottom:12px;">
-          <label class="cb-check"><input type="radio" name="pricetype" value="fullday" checked onclick="onPriceTypeChange('fullday')"/> Full Day</label>
-          <label class="cb-check"><input type="radio" name="pricetype" value="halfday" onclick="onPriceTypeChange('halfday')"/> Half Day</label>
-          <label class="cb-check"><input type="radio" name="pricetype" value="hourly" onclick="onPriceTypeChange('hourly')"/> Hourly</label>
+        <!-- Line items container -->
+        <div id="price-line-items">
+          <!-- Lines injected by JS -->
         </div>
 
-        <!-- Full Day pricing -->
-        <div id="price-fullday">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <div>
-              <div class="cb-field-label">Full Day Rate (QAR)</div>
-              <input class="cb-input" type="number" placeholder="e.g. 800" id="f-rate-fullday" oninput="calcFinancials()"/>
-            </div>
-            <div>
-              <div class="cb-field-label">Number of Days</div>
-              <input class="cb-input" type="number" placeholder="1" id="f-num-fulldays" value="1" min="1" oninput="calcFinancials()"/>
-            </div>
-          </div>
-          <div style="font-size:10px;color:var(--text-xlight);margin-top:4px;">e.g. QAR 800 × 3 days = QAR 2,400</div>
+        <!-- Add line buttons -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+          <button type="button" onclick="addPriceLine('fullday')" style="font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;border:1.5px dashed var(--border);background:var(--white);cursor:pointer;color:var(--dark);font-family:'Inter',sans-serif;">+ Full Day</button>
+          <button type="button" onclick="addPriceLine('halfday')" style="font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;border:1.5px dashed var(--border);background:var(--white);cursor:pointer;color:var(--dark);font-family:'Inter',sans-serif;">+ Half Day</button>
+          <button type="button" onclick="addPriceLine('hourly')"  style="font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;border:1.5px dashed var(--border);background:var(--white);cursor:pointer;color:var(--dark);font-family:'Inter',sans-serif;">+ Hourly</button>
+          <button type="button" onclick="addPriceLine('transport')" style="font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;border:1.5px dashed var(--pink-light);background:var(--pink-pale);cursor:pointer;color:var(--pink-dark);font-family:'Inter',sans-serif;">+ Transport</button>
         </div>
-
-        <!-- Half Day pricing -->
-        <div id="price-halfday" style="display:none;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <div>
-              <div class="cb-field-label">Half Day Rate (QAR)</div>
-              <input class="cb-input" type="number" placeholder="e.g. 450" id="f-rate-halfday" oninput="calcFinancials()"/>
-            </div>
-            <div>
-              <div class="cb-field-label">Number of Half Days</div>
-              <input class="cb-input" type="number" placeholder="1" id="f-num-halfdays" value="1" min="1" oninput="calcFinancials()"/>
-            </div>
-          </div>
-          <div style="font-size:10px;color:var(--text-xlight);margin-top:4px;">e.g. QAR 450 × 2 half days = QAR 900</div>
-        </div>
-
-        <!-- Hourly pricing -->
-        <div id="price-hourly" style="display:none;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <div>
-              <div class="cb-field-label">Hourly Rate (QAR)</div>
-              <input class="cb-input" type="number" placeholder="e.g. 150" id="f-rate-hour" oninput="calcFinancials()"/>
-            </div>
-            <div>
-              <div class="cb-field-label">Number of Hours</div>
-              <input class="cb-input" type="number" placeholder="e.g. 4" id="f-num-hours" value="1" min="1" oninput="calcFinancials()"/>
-            </div>
-          </div>
-          <div style="font-size:10px;color:var(--text-xlight);margin-top:4px;">e.g. QAR 150 × 4 hours = QAR 600</div>
-        </div>
-
-        <!-- Transport Fee -->
-        <div class="cb-field-label" style="margin-top:10px;">Transport Fee (QAR) <span style="font-weight:400;color:var(--text-xlight);">— optional</span></div>
-        <input class="cb-input" type="number" placeholder="0" id="f-transport" oninput="calcFinancials()"/>
 
         <!-- Auto-calculated breakdown -->
-        <div style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-top:12px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Calculation</span>
-            <span style="font-size:10px;color:rgba(255,255,255,0.4);" id="price-formula">— × — = —</span>
-          </div>
+        <div style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-top:14px;">
+          <div style="margin-bottom:10px;" id="price-formula-lines" style="font-size:10px;color:rgba(255,255,255,0.4);"></div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
             <div style="background:rgba(255,255,255,0.07);border-radius:7px;padding:10px 12px;text-align:center;">
               <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Total Price</div>
@@ -1364,100 +1317,117 @@
     renderClients();
   }
 
-  // ── Duration change: auto-switch price type ──
-  // Duration radio no longer controls price type — price type has its own radios
-  function onDurationChange(dur) { calcFinancials(); }
+  // ── PRICING LINE ITEMS ──
+  let priceLines = []; // [{type:'fullday'|'halfday'|'hourly'|'transport', qty:1, rate:0}]
+  let lineIdCounter = 0;
 
-  // ── Price type toggle ──
-  function onPriceTypeChange(type) {
-    document.getElementById('price-fullday').style.display = type==='fullday' ? 'block' : 'none';
-    document.getElementById('price-halfday').style.display = type==='halfday' ? 'block' : 'none';
-    document.getElementById('price-hourly').style.display  = type==='hourly'  ? 'block' : 'none';
+  const lineLabels = {
+    fullday:   { label:'Full Day',    qtyLabel:'Days',  ratePlaceholder:'Rate per day (QAR)' },
+    halfday:   { label:'Half Day',    qtyLabel:'Days',  ratePlaceholder:'Rate per half day (QAR)' },
+    hourly:    { label:'Hourly',      qtyLabel:'Hours', ratePlaceholder:'Rate per hour (QAR)' },
+    transport: { label:'Transport',   qtyLabel:'Trips', ratePlaceholder:'Amount per trip (QAR)' },
+  };
+
+  function addPriceLine(type) {
+    const id = ++lineIdCounter;
+    priceLines.push({ id, type, qty: 1, rate: 0 });
+    renderPriceLines();
+  }
+
+  function removePriceLine(id) {
+    priceLines = priceLines.filter(l => l.id !== id);
+    renderPriceLines();
+  }
+
+  function updatePriceLine(id, field, val) {
+    const line = priceLines.find(l => l.id === id);
+    if (line) { line[field] = parseFloat(val) || 0; }
     calcFinancials();
   }
 
-  // ── Toggle overtime hours input ──
+  function renderPriceLines() {
+    const container = document.getElementById('price-line-items');
+    if (priceLines.length === 0) {
+      container.innerHTML = `<div style="font-size:11px;color:var(--text-xlight);padding:10px 0;">No price lines yet — click a button below to add.</div>`;
+      calcFinancials();
+      return;
+    }
+    container.innerHTML = priceLines.map(line => {
+      const cfg = lineLabels[line.type];
+      const isTransport = line.type === 'transport';
+      const lineTotal = (line.qty || 0) * (line.rate || 0);
+      return `
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:${isTransport ? 'var(--pink-dark)' : 'var(--dark)'};">${cfg.label}</span>
+          <span style="font-size:12px;font-weight:700;color:var(--dark);">QAR ${lineTotal.toLocaleString()}</span>
+          <button type="button" onclick="removePriceLine(${line.id})" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:16px;line-height:1;padding:0 2px;">×</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-xlight);margin-bottom:3px;">${cfg.qtyLabel}</div>
+            <input class="cb-input" type="number" value="${line.qty}" min="0.5" step="0.5" style="margin-bottom:0;" oninput="updatePriceLine(${line.id},'qty',this.value);renderPriceLines()"/>
+          </div>
+          <div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-xlight);margin-bottom:3px;">Rate (QAR)</div>
+            <input class="cb-input" type="number" value="${line.rate||''}" placeholder="${cfg.ratePlaceholder.split(' (')[0]}" style="margin-bottom:0;" oninput="updatePriceLine(${line.id},'rate',this.value);renderPriceLines()"/>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    calcFinancials();
+  }
+
+  // ── Calc financials from line items ──
+  function calcFinancials() {
+    let grandTotal = 0;
+    const formulaLines = [];
+    priceLines.forEach(line => {
+      const lineTotal = (line.qty||0) * (line.rate||0);
+      grandTotal += lineTotal;
+      if (lineTotal > 0) {
+        const cfg = lineLabels[line.type];
+        formulaLines.push(`<div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:3px;"><span>${cfg.label} × ${line.qty}</span><span>QAR ${lineTotal.toLocaleString()}</span></div>`);
+      }
+    });
+
+    // Overtime addition
+    const isOvertime = document.querySelector('input[name="overtime"]:checked')?.value === 'Overtime';
+    if (isOvertime) {
+      const otHours = parseFloat(document.getElementById('f-overtime-hours')?.value)||0;
+      const otRate  = parseFloat(document.getElementById('f-overtime-rate')?.value)||0;
+      if (otHours > 0 && otRate > 0) {
+        const otTotal = otHours * otRate;
+        grandTotal += otTotal;
+        formulaLines.push(`<div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:3px;"><span>Overtime ${otHours}hrs × QAR ${otRate}</span><span>QAR ${otTotal.toLocaleString()}</span></div>`);
+      } else if (otHours > 0) {
+        formulaLines.push(`<div style="font-size:10px;color:rgba(255,255,255,0.4);">+ ${otHours} OT hrs (rate TBD after job)</div>`);
+      }
+    }
+
+    const deposit = grandTotal * 0.5;
+    const balance = grandTotal * 0.5;
+
+    const formulaEl = document.getElementById('price-formula-lines');
+    if (formulaEl) formulaEl.innerHTML = formulaLines.length ? formulaLines.join('') : '<div style="font-size:10px;color:rgba(255,255,255,0.3);">Add price lines above</div>';
+
+    document.getElementById('calc-total-display').textContent   = 'QAR ' + grandTotal.toLocaleString();
+    document.getElementById('calc-deposit-display').textContent = 'QAR ' + deposit.toLocaleString();
+    document.getElementById('calc-balance-display').textContent = 'QAR ' + balance.toLocaleString();
+    document.getElementById('f-deposit').value = deposit;
+    document.getElementById('f-balance').value = balance;
+  }
+
+  // ── kept for compatibility ──
+  function onDurationChange(dur) {}
+  function onPriceTypeChange(type) {}
   function toggleOvertimeHours(show) {
     document.getElementById('overtime-hours-wrap').style.display = show ? 'block' : 'none';
     document.getElementById('overtime-rate-wrap').style.display  = show ? 'block' : 'none';
     calcFinancials();
   }
-
-  // ── Get actual day count from selected dates ──
-  function getSelectedDayCount() {
-    const type = document.querySelector('input[name="datetype"]:checked')?.value || 'single';
-    if (type === 'single') {
-      return document.getElementById('f-date-single').value ? 1 : 1;
-    } else if (type === 'consecutive') {
-      const from = document.getElementById('f-date-from').value;
-      const to   = document.getElementById('f-date-to').value;
-      if (!from || !to) return 1;
-      const diff = (new Date(to) - new Date(from)) / (1000*60*60*24);
-      return Math.max(1, diff + 1);
-    } else {
-      return Math.max(1, randomDates.length);
-    }
-  }
-
-  // ── Calc financials ──
-  function calcFinancials() {
-    const ptype = document.querySelector('input[name="pricetype"]:checked')?.value || 'fullday';
-    let serviceTotal = 0;
-    let formula = '';
-
-    // Use actual selected dates count for fullday/halfday
-    const autodays = getSelectedDayCount();
-
-    if (ptype === 'fullday') {
-      const rate = parseFloat(document.getElementById('f-rate-fullday').value)||0;
-      // Always sync the days field with actual selected dates count
-      const daysField = document.getElementById('f-num-fulldays');
-      daysField.value = autodays;
-      const days = autodays;
-      serviceTotal = rate * days;
-      formula = rate > 0 ? `QAR ${rate.toLocaleString()} × ${days} day${days!==1?'s':''} = QAR ${serviceTotal.toLocaleString()}` : '—';
-    } else if (ptype === 'halfday') {
-      const rate = parseFloat(document.getElementById('f-rate-halfday').value)||0;
-      const hfField = document.getElementById('f-num-halfdays');
-      hfField.value = autodays;
-      const num  = autodays;
-      serviceTotal = rate * num;
-      formula = rate > 0 ? `QAR ${rate.toLocaleString()} × ${num} half day${num!==1?'s':''} = QAR ${serviceTotal.toLocaleString()}` : '—';
-    } else if (ptype === 'hourly') {
-      const rate  = parseFloat(document.getElementById('f-rate-hour').value)||0;
-      const hours = parseFloat(document.getElementById('f-num-hours').value)||1;
-      serviceTotal = rate * hours;
-      formula = rate > 0 ? `QAR ${rate.toLocaleString()} × ${hours} hr${hours!==1?'s':''} = QAR ${serviceTotal.toLocaleString()}` : '—';
-    }
-
-    // Overtime addition
-    const isOvertime = document.querySelector('input[name="overtime"]:checked')?.value === 'Overtime';
-    let overtimeTotal = 0;
-    if (isOvertime) {
-      const otHours = parseFloat(document.getElementById('f-overtime-hours')?.value)||0;
-      const otRate  = parseFloat(document.getElementById('f-overtime-rate')?.value)||0;
-      if (otHours > 0 && otRate > 0) {
-        overtimeTotal = otHours * otRate;
-        formula += ` + OT QAR ${otRate}×${otHours}hrs`;
-      } else if (otHours > 0) {
-        formula += ` + ${otHours} OT hrs (rate TBD)`;
-      }
-    }
-
-    const transport  = parseFloat(document.getElementById('f-transport').value)||0;
-    const grandTotal = serviceTotal + overtimeTotal + transport;
-    const deposit    = grandTotal * 0.5;
-    const balance    = grandTotal * 0.5;
-
-    // Update the dark breakdown panel
-    document.getElementById('price-formula').textContent        = formula;
-    document.getElementById('calc-total-display').textContent   = 'QAR ' + grandTotal.toLocaleString();
-    document.getElementById('calc-deposit-display').textContent = 'QAR ' + deposit.toLocaleString();
-    document.getElementById('calc-balance-display').textContent = 'QAR ' + balance.toLocaleString();
-
-    // Store in hidden fields for saving
-    document.getElementById('f-deposit').value = deposit;
-    document.getElementById('f-balance').value = balance;
+  function getPriceFromForm() {
+    return priceLines.reduce((sum, l) => sum + (l.qty||0)*(l.rate||0), 0);
   }
 
   // ── Date inputs ──
@@ -1638,7 +1608,7 @@
     document.getElementById('calc-total-display').textContent   = 'QAR 0';
     document.getElementById('calc-deposit-display').textContent = 'QAR 0';
     document.getElementById('calc-balance-display').textContent = 'QAR 0';
-    document.getElementById('price-formula').textContent = '— × — = —';
+    priceLines = []; lineIdCounter = 0; renderPriceLines();
     randomDates = [];
     renderRandomChips();
     editingClientId = null;
@@ -1864,6 +1834,7 @@
 
   // Init render
   renderClients();
+  renderPriceLines();
 
   // ── Modals ──
   function openModal(name) {
