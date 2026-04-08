@@ -1572,32 +1572,49 @@
     const name = document.getElementById('f-name').value.trim();
     if (!name) { alert('Please enter a client name.'); return; }
     const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-    const phone = document.getElementById('f-phone').value.trim();
-    const area  = document.getElementById('f-area').value.trim();
+    const phone       = document.getElementById('f-phone').value.trim();
+    const area        = document.getElementById('f-area').value.trim();
     const maps        = document.getElementById('f-maps').value.trim();
     const housenumber = document.getElementById('f-housenumber').value.trim();
-    const price = getPriceFromForm();
-    const transport = parseFloat(document.getElementById('f-transport').value)||0;
-    const grandTotal = price + transport;
-    const svcType = document.querySelector('input[name="svctype"]:checked')?.value || 'Service Day';
-    const duration = document.querySelector('input[name="duration"]:checked')?.value || 'Full Day';
-    const lang    = document.querySelector('input[name="lang"]:checked')?.value || 'English';
-    const notes   = document.getElementById('f-notes').value.trim();
-    const dates   = getSelectedDates();
+    const transport   = parseFloat(document.getElementById('f-transport').value)||0;
+    const svcType     = document.querySelector('input[name="svctype"]:checked')?.value || 'Service Day';
+    const duration    = document.querySelector('input[name="duration"]:checked')?.value || 'Full Day';
+    const lang        = document.querySelector('input[name="lang"]:checked')?.value || 'English';
+    const notes       = document.getElementById('f-notes').value.trim();
+    const dates       = getSelectedDates();
+
+    // Get totals from the already-calculated display fields
+    const totalStr  = document.getElementById('calc-total-display').textContent.replace(/[^0-9.]/g,'');
+    const grandTotal = parseFloat(totalStr) || 0;
+
+    // Overtime info
+    const isOvertime  = document.querySelector('input[name="overtime"]:checked')?.value === 'Overtime';
+    const otHours     = parseFloat(document.getElementById('f-overtime-hours')?.value)||0;
+    const otRate      = parseFloat(document.getElementById('f-overtime-rate')?.value)||0;
+
     const statusMap = { 'Service Day':'Service Day','Consultation Appointment':'Consultation','Shopping for Client':'Scheduled','Other':'Proposal' };
+
+    // Build the 6 reminders array (all pending by default)
+    const reminders = REMINDER_LABELS.map(() => ({ sent: false }));
+
     const newClient = {
-      id: clientsData.length+1, name, initials, phone, area, maps, housenumber,
+      id: Date.now(), // unique ID
+      name, initials, phone, area, maps, housenumber,
       svcType, duration, dates, transport,
-      price: grandTotal, deposit: grandTotal*0.5, balance: grandTotal*0.5,
+      price: grandTotal,
+      deposit: grandTotal * 0.5,
+      balance: grandTotal * 0.5,
       depositPaid: document.getElementById('f-deposit-received').checked,
       balancePaid: document.getElementById('f-balance-received').checked,
-      lang, notes, status: statusMap[svcType] || 'Service Day',
-      progress: [1,0,0,0,0,0]
+      isOvertime, otHours, otRate,
+      lang, notes,
+      status: statusMap[svcType] || 'Service Day',
+      reminders
     };
+
     clientsData.unshift(newClient);
     renderClients();
-    const reminderTypes = ['Consultation Payment','50% Deposit Request','Service — 3 Days','Service — 1 Day','50% Balance Morning','Thank You & Feedback'];
-    alert(`✅ Booking saved for ${name}!\n\n📅 Added to Calendar: ${dates.map(d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'})).join(', ')||'No date set'}\n🔔 ${reminderTypes.length} reminders auto-created\n💬 WhatsApp messages ready to schedule`);
+    alert(`✅ Booking saved for ${name}!\n\n📅 Dates: ${dates.map(d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'})).join(', ')||'No date set'}\n💰 Total: QAR ${grandTotal.toLocaleString()}\n🔔 6 reminders auto-created`);
     clearForm();
   }
 
