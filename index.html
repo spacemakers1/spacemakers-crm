@@ -560,7 +560,7 @@
     <a class="nav-item" onclick="showPage('whatsapp')"><span class="icon">💬</span> WhatsApp Scheduler</a>
   </nav>
   <div class="sidebar-footer">
-    <button class="new-booking-btn" onclick="showPageDirect('clients');clearForm();document.querySelector('#page-clients > div:last-child > div:first-child').scrollTop=0;document.getElementById('f-name').focus();">+ New Booking</button>
+    <button class="new-booking-btn" onclick="newBooking()">+ New Booking</button>
     <span class="clear-form">Clear Form</span>
   </div>
 </aside>
@@ -1768,6 +1768,21 @@
     const navItems = document.querySelectorAll('.nav-item');
     const idx = pages.indexOf(name);
     if (navItems[idx]) navItems[idx].classList.add('active');
+  }
+
+  function newBooking() {
+    // Go to Clients & Bookings page
+    showPageDirect('clients');
+    // Clear the form for a fresh entry
+    clearForm();
+    // Scroll the left form panel to the top
+    const formPanel = document.querySelector('#page-clients > div:last-child > div:first-child');
+    if (formPanel) formPanel.scrollTop = 0;
+    // Focus on Client Name field
+    setTimeout(() => {
+      const nameField = document.getElementById('f-name');
+      if (nameField) nameField.focus();
+    }, 50);
   }
 
   // ── Export to Excel (CSV) ──
