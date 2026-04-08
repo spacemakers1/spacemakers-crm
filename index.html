@@ -1350,15 +1350,23 @@
   const DEFAULT_CLIENTS = [];
 
   // ── LOAD FROM LOCALSTORAGE (persists data across sessions) ──
+  const DATA_VERSION = 'v2'; // bump this to wipe old cached data
   function loadData() {
     try {
+      // Version check — if version doesn't match, clear old data
+      const storedVersion = localStorage.getItem('spacemakers_version');
+      if (storedVersion !== DATA_VERSION) {
+        localStorage.removeItem('spacemakers_clients');
+        localStorage.setItem('spacemakers_version', DATA_VERSION);
+        return [];
+      }
       const saved = localStorage.getItem('spacemakers_clients');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch(e) {}
-    return DEFAULT_CLIENTS.map(c => ({...c, reminders: c.reminders.map(r=>({...r}))}));
+    return [];
   }
 
   function saveData() {
