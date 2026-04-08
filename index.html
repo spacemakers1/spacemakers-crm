@@ -572,27 +572,13 @@
       <strong id="today-date">Wednesday, 8 April 2026</strong>
     </div>
 
-    <div class="topbar-appt">
-      <span class="appt-time">09:00</span>
-      <div>
-        <div class="appt-name">Sara Al-Mansoori</div>
-        <div class="appt-loc">Services Day · The Pearl</div>
-      </div>
-      <span class="appt-tag">Service Day</span>
+    <div id="topbar-today-bookings" style="display:flex;align-items:center;gap:0;flex:1;">
+      <!-- Populated dynamically from real bookings -->
     </div>
 
-    <div class="topbar-appt">
-      <span class="appt-time">14:00</span>
-      <div>
-        <div class="appt-name">Reem Hassan</div>
-        <div class="appt-loc">Consultation · Lusail</div>
-      </div>
-      <span class="appt-tag blue">Consultation</span>
-    </div>
-
-    <div class="topbar-summary">
-      <span>2 bookings today</span>
-      <strong>QAR 2,550 expected</strong>
+    <div class="topbar-summary" id="topbar-summary">
+      <span id="topbar-booking-count">No bookings today</span>
+      <strong id="topbar-revenue">QAR 0 expected</strong>
     </div>
     <div id="save-indicator" style="margin-left:auto;padding:0 20px;display:flex;align-items:center;gap:6px;font-size:11px;color:#666;opacity:0;transition:opacity 0.4s;">
       <span style="color:#5a9e6f;font-size:13px;">✓</span> Saved
@@ -611,24 +597,24 @@
     <!-- STATS -->
     <div class="stats-row">
       <div class="stat-tile">
-        <div class="stat-value">12</div>
+        <div class="stat-value" id="stat-bookings">0</div>
         <div class="stat-label">Bookings This Month</div>
       </div>
       <div class="stat-tile">
-        <div class="stat-value pink">QAR 18,400</div>
+        <div class="stat-value pink" id="stat-revenue">QAR 0</div>
         <div class="stat-label">Revenue MTD</div>
       </div>
       <div class="stat-tile">
-        <div class="stat-value">3</div>
+        <div class="stat-value" id="stat-deposits">0</div>
         <div class="stat-label">Pending Deposits</div>
       </div>
       <div class="stat-tile">
-        <div class="stat-value">5</div>
+        <div class="stat-value" id="stat-reminders">0</div>
         <div class="stat-label">Reminders Due</div>
       </div>
       <div class="stat-tile">
-        <div class="stat-value pink">94%</div>
-        <div class="stat-label">Occupancy Rate</div>
+        <div class="stat-value pink" id="stat-clients">0</div>
+        <div class="stat-label">Total Clients</div>
       </div>
     </div>
 
@@ -661,13 +647,13 @@
             <div class="cal-day-header">Sat</div>
             <div class="cal-day-header">Sun</div>
             <!-- Days 8-14 -->
-            <div class="cal-day"><div class="day-num today">8</div><div class="cal-event">Sara Al-Mansoori</div><div class="cal-event">Reem Hassan</div></div>
+            <div class="cal-day"><div class="day-num today">8</div></div>
             <div class="cal-day"><div class="day-num">9</div></div>
-            <div class="cal-day"><div class="day-num">10</div><div class="cal-event">Layla Hassan</div></div>
-            <div class="cal-day"><div class="day-num">11</div><div class="cal-event">Noura Al-Thani</div></div>
-            <div class="cal-day"><div class="day-num">12</div><div class="cal-event orange">Fatima Al-K.</div></div>
-            <div class="cal-day"><div class="day-num">13</div><div class="cal-event orange">IKEA Run</div></div>
-            <div class="cal-day"><div class="day-num">14</div><div class="cal-event">Mariam Jaber</div></div>
+            <div class="cal-day"><div class="day-num">10</div></div>
+            <div class="cal-day"><div class="day-num">11</div></div>
+            <div class="cal-day"><div class="day-num">12</div></div>
+            <div class="cal-day"><div class="day-num">13</div></div>
+            <div class="cal-day"><div class="day-num">14</div></div>
             <div class="add-personal" onclick="openModal('personal')">
               <span style="color:var(--pink)">●</span> + Add personal entry or reminder...
             </div>
@@ -685,13 +671,13 @@
             <div class="cal-day-header">Fri</div>
             <div class="cal-day-header">Sat</div>
             <div class="cal-day-header">Sun</div>
-            <div class="cal-day"><div class="day-num">15</div><div class="cal-event">Hessa Al-Marri</div><div class="cal-event personal">Monthly Review</div></div>
-            <div class="cal-day"><div class="day-num">16</div><div class="cal-event">Aisha Al-Emadi</div></div>
-            <div class="cal-day"><div class="day-num">17</div><div class="cal-event">Dana Al-Fardan</div></div>
-            <div class="cal-day"><div class="day-num">18</div><div class="cal-event personal">Day Off</div></div>
+            <div class="cal-day"><div class="day-num">15</div></div>
+            <div class="cal-day"><div class="day-num">16</div></div>
+            <div class="cal-day"><div class="day-num">17</div></div>
+            <div class="cal-day"><div class="day-num">18</div></div>
             <div class="cal-day"><div class="day-num">19</div></div>
-            <div class="cal-day"><div class="day-num">20</div><div class="cal-event">Maha Al-Sulaiti</div></div>
-            <div class="cal-day"><div class="day-num">21</div><div class="cal-event">Noor Ibrahim</div></div>
+            <div class="cal-day"><div class="day-num">20</div></div>
+            <div class="cal-day"><div class="day-num">21</div></div>
             <div class="add-personal" onclick="openModal('personal')">
               <span style="color:var(--pink)">●</span> + Add personal entry or reminder...
             </div>
@@ -711,60 +697,11 @@
             </div>
           </div>
           <div class="booking-item">
-            <div class="booking-avatar">SA</div>
-            <div class="booking-info">
-              <div class="booking-name">Sara Al-Mansoori</div>
-              <div class="booking-sub">1 day · QAR 200</div>
+            <div id="upcoming-bookings-list" style="width:100%;padding:20px;text-align:center;color:var(--text-xlight);font-size:12px;">
+              No upcoming bookings yet.<br>
+              <span style="font-size:11px;">Add a client in Clients &amp; Bookings to get started.</span>
             </div>
-            <span class="booking-tag tag-service">Service Day</span>
-            <div class="booking-date">Wed 10<span>Apr</span></div>
           </div>
-          <div class="booking-item">
-            <div class="booking-avatar">LH</div>
-            <div class="booking-info">
-              <div class="booking-name">Layla Hassan</div>
-              <div class="booking-sub">2 hrs · QAR 300</div>
-            </div>
-            <span class="booking-tag tag-consult">Consultation</span>
-            <div class="booking-date">Thu 11<span>Apr</span></div>
-          </div>
-          <div class="booking-item">
-            <div class="booking-avatar">NT</div>
-            <div class="booking-info">
-              <div class="booking-name">Noura Al-Thani</div>
-              <div class="booking-sub">Half Day · QAR 350</div>
-            </div>
-            <span class="booking-tag tag-halfday">Half Day</span>
-            <div class="booking-date">Fri 12<span>Apr</span></div>
-          </div>
-          <div class="booking-item">
-            <div class="booking-avatar">FK</div>
-            <div class="booking-info">
-              <div class="booking-name">Fatima Al-Kuwari</div>
-              <div class="booking-sub">Follow-up pending</div>
-            </div>
-            <span class="booking-tag tag-proposal">Proposal</span>
-            <div class="booking-date">Sun 14<span>Apr</span></div>
-          </div>
-          <div class="booking-item">
-            <div class="booking-avatar">MJ</div>
-            <div class="booking-info">
-              <div class="booking-name">Mariam Jaber</div>
-              <div class="booking-sub">Full Day · QAR 600</div>
-            </div>
-            <span class="booking-tag tag-service">Service Day</span>
-            <div class="booking-date">Mon 15<span>Apr</span></div>
-          </div>
-          <div class="booking-item">
-            <div class="booking-avatar">HM</div>
-            <div class="booking-info">
-              <div class="booking-name">Hessa Al-Marri</div>
-              <div class="booking-sub">Free-of-Clue</div>
-            </div>
-            <span class="booking-tag tag-proposal">End of Series</span>
-            <div class="booking-date">Tue 16<span>Apr</span></div>
-          </div>
-        </div>
 
         <!-- REVENUE CHART -->
         <div class="chart-panel">
@@ -777,7 +714,7 @@
               </div>
             </div>
             <div class="chart-meta">
-              <span class="chart-total">QAR 56,800 YTD</span>
+              <span class="chart-total" id="chart-ytd">QAR 0 YTD</span>
               <span class="chart-sub">After deductions</span>
             </div>
           </div>
@@ -792,51 +729,9 @@
         <div class="reminders-panel">
           <div class="panel-header">
             <span class="panel-title">Reminders</span>
-            <div class="client-chip">
-              Sara Al-Mansoori
-              <span>Service Day · Wed 10 Apr</span>
-            </div>
           </div>
-
-          <div class="reminder-item">
-            <span class="reminder-dot dot-green"></span>
-            <span class="reminder-label">Consultation Payment</span>
-            <span class="reminder-badge badge-sent">SENT</span>
-          </div>
-          <div class="reminder-item">
-            <span class="reminder-dot dot-green"></span>
-            <span class="reminder-label">Consultation Appt.</span>
-            <span class="reminder-badge badge-sent">SENT</span>
-          </div>
-          <div class="reminder-item">
-            <span class="reminder-dot dot-green"></span>
-            <span class="reminder-label">50% Deposit Request</span>
-            <span class="reminder-badge badge-sent">SENT</span>
-          </div>
-          <div class="reminder-item">
-            <span class="reminder-dot dot-green"></span>
-            <span class="reminder-label">Proposal Follow-up</span>
-            <span class="reminder-badge badge-sent">SENT</span>
-          </div>
-          <div class="reminder-item">
-            <span class="reminder-dot dot-orange"></span>
-            <span class="reminder-label">Service — 3 Days</span>
-            <span class="reminder-badge badge-due">DUE TOMORROW</span>
-          </div>
-          <div class="reminder-item">
-            <span class="reminder-dot dot-red"></span>
-            <span class="reminder-label">Service — 1 Day</span>
-            <button class="badge-action" onclick="openModal('send-reminder')">SEND</button>
-          </div>
-          <div class="reminder-item">
-            <span class="reminder-dot dot-red"></span>
-            <span class="reminder-label">50% Balance Morning</span>
-            <button class="badge-action" onclick="openModal('send-reminder')">SEND</button>
-          </div>
-          <div class="reminder-item">
-            <span class="reminder-dot dot-gray"></span>
-            <span class="reminder-label">Thank You &amp; Feedback</span>
-            <span style="font-size:14px;cursor:pointer;color:var(--text-xlight)">⋯</span>
+          <div id="overview-reminders-list" style="padding:20px;text-align:center;color:var(--text-xlight);font-size:11px;">
+            No reminders yet.<br>Add a client to see their reminders here.
           </div>
         </div>
       </div>
@@ -873,7 +768,7 @@
 
         <!-- Client Name -->
         <div class="cb-field-label">Client Name</div>
-        <input class="cb-input" type="text" placeholder="Sara Al-Mansoori" id="f-name"/>
+        <input class="cb-input" type="text" placeholder="Client full name" id="f-name"/>
 
         <!-- Phone -->
         <div class="cb-field-label">Phone / WhatsApp Number</div>
@@ -1213,7 +1108,7 @@
     <div class="modal-body">
       <div class="section-title">Client Information</div>
       <div class="form-row">
-        <div class="form-group"><label>Client Name</label><input type="text" placeholder="e.g. Sara Al-Mansoori"/></div>
+        <div class="form-group"><label>Client Name</label><input type="text" placeholder="Client full name"/></div>
         <div class="form-group"><label>Phone Number</label><input type="tel" placeholder="+974 XXXX XXXX"/></div>
       </div>
       <div class="form-row">
@@ -1309,7 +1204,7 @@
     </div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="form-group"><label>Client Name</label><input type="text" value="Sara Al-Mansoori"/></div>
+        <div class="form-group"><label>Client Name</label><input type="text" placeholder="Client full name"/></div>
         <div class="form-group"><label>WhatsApp Number</label><input type="tel" value="+974 XXXX XXXX"/></div>
       </div>
       <div class="form-row">
@@ -1918,9 +1813,9 @@
   // ── Revenue vs Target Chart ──
   const ctx = document.getElementById('revenueChart').getContext('2d');
 
-  // Net revenue after deductions (actual)
-  const netRevenue  = [12400, 14200, 15800, 14400, 0];
-  // Monthly target
+  // Net revenue — starts at zero, will fill from real data
+  const netRevenue  = [0, 0, 0, 0, 0];
+  // Monthly target — set your target here
   const target      = [15000, 15000, 15000, 15000, 15000];
 
   // Colour bars: green if met target, pink if below, gray if no data yet
