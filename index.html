@@ -1328,9 +1328,12 @@
     transport: { label:'Transport',   qtyLabel:'Trips', ratePlaceholder:'Amount per trip (QAR)' },
   };
 
+  // ── Standard rates (editable in future Pricing Settings page) ──
+  const STANDARD_RATES = { fullday: 2500, halfday: 1250, hourly: 315, transport: 50 };
+
   function addPriceLine(type) {
     const id = ++lineIdCounter;
-    priceLines.push({ id, type, qty: 1, rate: 0 });
+    priceLines.push({ id, type, qty: 1, rate: STANDARD_RATES[type] || 0 });
     renderPriceLines();
   }
 
