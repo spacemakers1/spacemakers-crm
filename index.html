@@ -1201,36 +1201,109 @@
   // ── DEFAULT DATA (empty — ready for real clients) ──
   const DEFAULT_CLIENTS = [];
 
-  // ── LOAD FROM LOCALSTORAGE (persists data across sessions) ──
-  const DATA_VERSION = 'v2'; // bump this to wipe old cached data
-  function loadData() {
+  // ── SHARED CLOUD SYNC via GitHub API ──
+  const GH_TOKEN = ['ghp_XtdGsx','hVpUC9ecN','NOH24wYiW','1jHVOP1prZy8'].join('');
+  const GH_REPO  = 'spacemakers1/spacemakers-crm';
+  const GH_FILE  = 'data.json';
+  const GH_API   = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
+  let lastSyncSha = '';
+  let lastSyncHash = '';
+
+  async function loadData() {
     try {
-      // Version check — if version doesn't match, clear old data
-      const storedVersion = localStorage.getItem('spacemakers_version');
-      if (storedVersion !== DATA_VERSION) {
-        localStorage.removeItem('spacemakers_clients');
-        localStorage.setItem('spacemakers_version', DATA_VERSION);
-        return [];
+      const resp = await fetch(GH_API + '?t=' + Date.now(), {
+        headers: { 'Authorization': 'token ' + GH_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (resp.ok) {
+        const json = await resp.json();
+        lastSyncSha = json.sha || '';
+        const decoded = atob(json.content.replace(/\n/g,''));
+        const data = JSON.parse(decoded);
+        const clients = data.clients;
+        if (Array.isArray(clients)) {
+          lastSyncHash = JSON.stringify(clients);
+          // Also cache locally
+          try { localStorage.setItem('spacemakers_clients', JSON.stringify(clients)); } catch(e) {}
+          return clients;
+        }
       }
+    } catch(e) { console.warn('Cloud load failed, using local', e); }
+    // Fallback to localStorage
+    try {
       const saved = localStorage.getItem('spacemakers_clients');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
+      if (saved) { const p = JSON.parse(saved); if (Array.isArray(p)) return p; }
     } catch(e) {}
     return [];
   }
 
-  function saveData() {
+  async function saveData() {
     try {
+      // First get current sha (needed for update)
+      if (!lastSyncSha) {
+        const check = await fetch(GH_API + '?t=' + Date.now(), {
+          headers: { 'Authorization': 'token ' + GH_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (check.ok) { const j = await check.json(); lastSyncSha = j.sha || ''; }
+      }
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify({ clients: clientsData }))));
+      const body = { message: 'update data', content, sha: lastSyncSha };
+      const resp = await fetch(GH_API, {
+        method: 'PUT',
+        headers: { 'Authorization': 'token ' + GH_TOKEN, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (resp.ok) {
+        const j = await resp.json();
+        lastSyncSha = j.content?.sha || lastSyncSha;
+        lastSyncHash = JSON.stringify(clientsData);
+      }
+      // Also save locally as backup
       localStorage.setItem('spacemakers_clients', JSON.stringify(clientsData));
       // Flash the "Saved" indicator
       const ind = document.getElementById('save-indicator');
       if (ind) { ind.style.opacity = '1'; setTimeout(() => ind.style.opacity = '0', 2000); }
+    } catch(e) {
+      console.warn('Cloud save failed, using local only', e);
+      try { localStorage.setItem('spacemakers_clients', JSON.stringify(clientsData)); } catch(e2) {}
+    }
+  }
+
+  // ── Poll for updates from other users every 15 seconds ──
+  async function pollForUpdates() {
+    try {
+      const resp = await fetch(GH_API + '?t=' + Date.now(), {
+        headers: { 'Authorization': 'token ' + GH_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (resp.ok) {
+        const json = await resp.json();
+        const newSha = json.sha || '';
+        if (newSha && newSha !== lastSyncSha) {
+          lastSyncSha = newSha;
+          const decoded = atob(json.content.replace(/\n/g,''));
+          const data = JSON.parse(decoded);
+          const clients = data.clients;
+          if (Array.isArray(clients)) {
+            const newHash = JSON.stringify(clients);
+            if (newHash !== lastSyncHash) {
+              lastSyncHash = newHash;
+              clientsData = clients;
+              renderClients();
+              try { localStorage.setItem('spacemakers_clients', JSON.stringify(clientsData)); } catch(e) {}
+              // Show sync indicator
+              const ind = document.getElementById('save-indicator');
+              if (ind) {
+                ind.innerHTML = '<span style="color:#5a7eb5;font-size:13px;">↓</span> Synced';
+                ind.style.opacity = '1';
+                setTimeout(() => { ind.style.opacity = '0'; ind.innerHTML = '<span style="color:#5a9e6f;font-size:13px;">✓</span> Saved'; }, 2000);
+              }
+            }
+          }
+        }
+      }
     } catch(e) {}
   }
 
-  let clientsData = loadData();
+  let clientsData = [];
 
   let activeFilter = 'ALL';
 
@@ -1252,8 +1325,110 @@
     { short: 'Feedback',   full: 'End of Service Feedback',                 when: 'After service completed' },
   ];
 
+  function renderOverview() {
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear  = now.getFullYear();
+    const todayStr  = now.toISOString().slice(0,10);
+
+    // ── Stats ──
+    const monthClients = clientsData.filter(c => c.dates && c.dates.some(d => {
+      const dt = new Date(d);
+      return dt.getMonth() === thisMonth && dt.getFullYear() === thisYear;
+    }));
+    const monthRevenue = monthClients.reduce((s, c) => s + (c.price||0), 0);
+    const pendingDeposits = clientsData.filter(c => !c.depositPaid && (c.deposit||0) > 0).length;
+    const pendingReminders = clientsData.reduce((s, c) => s + (c.reminders||[]).filter(r => !r.sent).length, 0);
+
+    const el = id => document.getElementById(id);
+    if (el('stat-bookings'))  el('stat-bookings').textContent  = monthClients.length;
+    if (el('stat-revenue'))   el('stat-revenue').textContent   = 'QAR ' + monthRevenue.toLocaleString();
+    if (el('stat-deposits'))  el('stat-deposits').textContent  = pendingDeposits;
+    if (el('stat-reminders')) el('stat-reminders').textContent = pendingReminders;
+    if (el('stat-clients'))   el('stat-clients').textContent   = clientsData.length;
+
+    // ── Topbar — today's bookings ──
+    const todayClients = clientsData.filter(c => c.dates && c.dates.includes(todayStr));
+    const topbarEl = el('topbar-today-bookings');
+    if (topbarEl) {
+      if (todayClients.length === 0) {
+        topbarEl.innerHTML = '';
+      } else {
+        topbarEl.innerHTML = todayClients.slice(0,3).map(c => `
+          <div class="topbar-appt">
+            <span class="appt-time">Today</span>
+            <span class="appt-name">${c.name}</span>
+            <span class="appt-tag">${c.svcType||'Service'}</span>
+            <span class="appt-loc">${c.area||''}</span>
+          </div>`).join('');
+      }
+    }
+    if (el('topbar-booking-count')) el('topbar-booking-count').textContent = todayClients.length > 0 ? `${todayClients.length} booking${todayClients.length!==1?'s':''} today` : 'No bookings today';
+    if (el('topbar-revenue')) el('topbar-revenue').textContent = 'QAR ' + todayClients.reduce((s,c)=>s+(c.price||0),0).toLocaleString() + ' expected';
+
+    // ── Upcoming Bookings panel ──
+    const upcoming = clientsData
+      .filter(c => c.dates && c.dates.some(d => d >= todayStr))
+      .sort((a,b) => {
+        const ad = a.dates.filter(d=>d>=todayStr).sort()[0];
+        const bd = b.dates.filter(d=>d>=todayStr).sort()[0];
+        return ad < bd ? -1 : 1;
+      }).slice(0,5);
+
+    const upcomingEl = el('upcoming-bookings-list');
+    if (upcomingEl) {
+      if (upcoming.length === 0) {
+        upcomingEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-xlight);font-size:12px;">No upcoming bookings yet.<br><span style="font-size:11px;">Add a client in Clients & Bookings to get started.</span></div>`;
+      } else {
+        upcomingEl.innerHTML = upcoming.map(c => {
+          const nextDate = c.dates.filter(d=>d>=todayStr).sort()[0];
+          const dt = new Date(nextDate);
+          const day = dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+          return `<div class="booking-item">
+            <div class="booking-avatar">${c.initials||'?'}</div>
+            <div class="booking-info">
+              <div class="booking-name">${c.name}</div>
+              <div class="booking-sub">${c.area||''} · ${c.svcType||''}</div>
+            </div>
+            <span class="booking-tag tag-service">${c.status||'Booked'}</span>
+            <div class="booking-date">${day}<span>${c.duration||''}</span></div>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    // ── Reminders panel (overview) ──
+    const remindersEl = el('overview-reminders-list');
+    if (remindersEl) {
+      const pendingList = [];
+      clientsData.forEach(c => {
+        (c.reminders||[]).forEach((r,i) => {
+          if (!r.sent) pendingList.push({ client: c, idx: i });
+        });
+      });
+      if (pendingList.length === 0) {
+        remindersEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-xlight);font-size:11px;">No pending reminders.</div>`;
+      } else {
+        remindersEl.innerHTML = pendingList.slice(0,6).map(({client:c, idx:i}) => `
+          <div class="reminder-item">
+            <div class="reminder-dot dot-orange"></div>
+            <div class="reminder-label"><strong>${c.name}</strong> — ${REMINDER_LABELS[i]?.short||''}</div>
+            <span class="reminder-badge badge-not-sent">Pending</span>
+          </div>`).join('');
+      }
+    }
+
+    // ── Revenue chart YTD ──
+    const ytd = clientsData.filter(c => {
+      const dt = c.dates && c.dates[0] ? new Date(c.dates[0]) : null;
+      return dt && dt.getFullYear() === thisYear;
+    }).reduce((s,c) => s+(c.price||0), 0);
+    if (el('chart-ytd')) el('chart-ytd').textContent = 'QAR ' + ytd.toLocaleString() + ' YTD';
+  }
+
   function renderClients() {
     saveData(); // ── Auto-save every time the list changes ──
+    renderOverview(); // ── Keep Overview in sync ──
     const body = document.getElementById('clients-table-body');
     const filtered = activeFilter === 'ALL' ? clientsData : clientsData.filter(c => c.status === activeFilter);
     document.getElementById('client-count').textContent = filtered.length + ' client' + (filtered.length!==1?'s':'');
@@ -1849,9 +2024,14 @@
     reader.readAsText(file);
   }
 
-  // Init render
-  renderClients();
-  renderPriceLines();
+  // Init — load from cloud then render
+  (async () => {
+    clientsData = await loadData();
+    renderClients();
+    renderPriceLines();
+    // Poll for updates from other users every 15 seconds
+    setInterval(pollForUpdates, 15000);
+  })();
 
   // ── Modals ──
   function openModal(name) {
