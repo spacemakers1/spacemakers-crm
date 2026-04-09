@@ -3065,10 +3065,10 @@
     return bookings.map(c => {
       const timeStr = c.startTime ? (c.startTime + (c.endTime ? '–'+c.endTime : '')) : '';
       const firstName = c.name.split(' ')[0];
-      // Always show name on first line, time (if set) on second line below it
+      // pointer-events:none on inner content so clicks always land on the chip div itself
       const inner = timeStr
-        ? `<div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${firstName}</div><div style="font-size:9px;opacity:0.88;white-space:nowrap;">${timeStr}</div>`
-        : `<div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${firstName}</div>`;
+        ? `<div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;">${firstName}</div><div style="font-size:9px;opacity:0.88;white-space:nowrap;pointer-events:none;">${timeStr}</div>`
+        : `<div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;">${firstName}</div>`;
       return `<div onclick="event.stopPropagation();calEditBookingTime(${c.id})"
         title="${c.name} — ${c.svcType} — QAR ${(c.price||0).toLocaleString()}${timeStr?' · '+timeStr:''}\nClick to edit time"
         style="background:${accent};color:white;border-radius:4px;padding:2px 6px;font-size:10px;
@@ -3084,8 +3084,8 @@
         const bg = `rgba(${r2},${g2},${b2},0.12)`;
         const timeStr = e.startTime ? (e.startTime + (e.endTime ? '–'+e.endTime : '')) : '';
         const inner = timeStr
-          ? `<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.text||''}</div><div style="font-size:9px;opacity:0.8;white-space:nowrap;">${timeStr}</div>`
-          : `<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.text||''}</div>`;
+          ? `<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;">${e.text||''}</div><div style="font-size:9px;opacity:0.8;white-space:nowrap;pointer-events:none;">${timeStr}</div>`
+          : `<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;">${e.text||''}</div>`;
         return `<div onclick="event.stopPropagation();calEditPersonal(${e.id},'${dateStr}')"
           title="${e.text||''}${timeStr?' · '+timeStr:''} (click to edit)"
           style="background:${bg};color:${col};border:1px solid ${col}44;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:600;
@@ -3226,7 +3226,7 @@
         const bookings = clientsData.filter(c => c.dates && c.dates.includes(dStr));
         const personal = calPersonalEntries.filter(e => e.date === dStr);
         const accentBg = `rgba(${r},${g},${b},0.04)`;
-        return `<div onclick="openAddEntryModal('${dStr}')" style="min-height:160px;padding:8px 6px 20px;border-right:1px solid var(--border);cursor:pointer;background:${isTod?'rgba('+r+','+g+','+b+',0.05)':'var(--white)'};transition:background 0.1s;position:relative;box-sizing:border-box;"
+        return `<div onclick="if(!event.target.closest('[onclick*=calEditBookingTime],[onclick*=calEditPersonal]'))openAddEntryModal('${dStr}')" style="min-height:160px;padding:8px 6px 20px;border-right:1px solid var(--border);cursor:pointer;background:${isTod?'rgba('+r+','+g+','+b+',0.05)':'var(--white)'};transition:background 0.1s;position:relative;box-sizing:border-box;"
           onmouseenter="this.style.background='${accentBgHover}'" onmouseleave="this.style.background='${isTod?'rgba('+r+','+g+','+b+',0.05)':'var(--white)'}'">
           ${_calBookingChips(bookings, calAccentColor, true)}
           ${_calPersonalChips(personal, dStr, true)}
@@ -3280,9 +3280,9 @@
         const bookings  = clientsData.filter(c => c.dates && c.dates.includes(dateStr));
         const personal  = calPersonalEntries.filter(e => e.date === dateStr);
 
-        return `<div onclick="openAddEntryModal('${dateStr}')"
+        return `<div onclick="if(!event.target.closest('[onclick*=calEditBookingTime],[onclick*=calEditPersonal]'))openAddEntryModal('${dateStr}')"
           style="background:${isOutside?'var(--cream-dark)':'var(--white)'};min-height:120px;padding:8px 8px 24px;position:relative;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;box-sizing:border-box;"
-          onmouseenter="if(!event.target.closest('[onclick*=calOpen],[onclick*=calEdit]'))this.style.background='${isOutside?'#e8e3dc':accentBgHover}'"
+          onmouseenter="if(!event.target.closest('[onclick*=calEditBookingTime],[onclick*=calEditPersonal]'))this.style.background='${isOutside?'#e8e3dc':accentBgHover}'"
           onmouseleave="this.style.background='${isOutside?'var(--cream-dark)':'var(--white)'}'">
           <div style="text-align:right;margin-bottom:4px;">
             <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:${isToday?'800':'500'};color:${isToday?'white':isOutside?'var(--text-xlight)':'var(--dark)'};background:${isToday?calAccentColor:'transparent'};">${cell.day}</span>
