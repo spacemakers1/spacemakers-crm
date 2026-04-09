@@ -1081,12 +1081,18 @@
       <!-- Nav row -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;">
         <div style="display:flex;align-items:center;gap:12px;">
-          <button onclick="calPrevMonth()" style="background:none;border:1px solid var(--border);border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--text);">‹</button>
+          <button onclick="calPrev()" style="background:none;border:1px solid var(--border);border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--text);">‹</button>
           <div id="cal-nav-title" style="font-size:18px;font-weight:800;color:var(--dark);letter-spacing:-0.5px;min-width:140px;"></div>
-          <button onclick="calNextMonth()" style="background:none;border:1px solid var(--border);border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--text);">›</button>
+          <button onclick="calNext()" style="background:none;border:1px solid var(--border);border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--text);">›</button>
           <span style="font-size:10px;font-weight:600;color:var(--text-xlight);background:var(--cream);border:1px solid var(--border);padding:3px 9px;border-radius:20px;letter-spacing:0.5px;">🔗 Linked to CRM</span>
         </div>
-        <div style="display:flex;align-items:center;gap:16px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <!-- View toggle -->
+          <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <button id="cal-view-day" onclick="calSetView('day')" style="padding:7px 14px;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:'Inter',sans-serif;background:var(--cream);color:var(--text-light);">Day</button>
+            <button id="cal-view-week" onclick="calSetView('week')" style="padding:7px 14px;font-size:11px;font-weight:700;border:none;border-left:1px solid var(--border);border-right:1px solid var(--border);cursor:pointer;font-family:'Inter',sans-serif;background:var(--cream);color:var(--text-light);">Week</button>
+            <button id="cal-view-month" onclick="calSetView('month')" style="padding:7px 14px;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:'Inter',sans-serif;background:var(--dark);color:white;">Month</button>
+          </div>
           <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-light);">
             <span style="width:12px;height:12px;border-radius:3px;background:var(--cal-accent,#c9768a);display:inline-block;"></span> Client Booking
           </div>
@@ -1100,8 +1106,8 @@
 
     <!-- Calendar grid -->
     <div style="flex:1;overflow-y:auto;padding:0 20px 20px;">
-      <!-- Day-of-week headers -->
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:0;background:var(--white);border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;margin-top:16px;overflow:hidden;">
+      <!-- Day-of-week headers (hidden for day view) -->
+      <div id="cal-dow-header" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0;background:var(--white);border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;margin-top:16px;overflow:hidden;">
         <div style="padding:10px 14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);text-align:center;background:var(--cream);">MON</div>
         <div style="padding:10px 14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);text-align:center;background:var(--cream);">TUE</div>
         <div style="padding:10px 14px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);text-align:center;background:var(--cream);">WED</div>
@@ -1163,15 +1169,31 @@
 
       <!-- Colour -->
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-xlight);margin-bottom:8px;">Colour</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;" id="cem-colour-swatches">
-        <div onclick="cemPickColour('#a89ac8')" id="cem-c-purple" style="width:26px;height:26px;border-radius:50%;background:#a89ac8;cursor:pointer;border:3px solid #a89ac8;box-sizing:border-box;transition:transform 0.1s;" title="Purple"></div>
-        <div onclick="cemPickColour('#c9768a')" id="cem-c-pink" style="width:26px;height:26px;border-radius:50%;background:#c9768a;cursor:pointer;border:3px solid transparent;box-sizing:border-box;" title="Pink"></div>
-        <div onclick="cemPickColour('#5a9e6f')" id="cem-c-green" style="width:26px;height:26px;border-radius:50%;background:#5a9e6f;cursor:pointer;border:3px solid transparent;box-sizing:border-box;" title="Green"></div>
-        <div onclick="cemPickColour('#5a7eb5')" id="cem-c-blue" style="width:26px;height:26px;border-radius:50%;background:#5a7eb5;cursor:pointer;border:3px solid transparent;box-sizing:border-box;" title="Blue"></div>
-        <div onclick="cemPickColour('#d4845a')" id="cem-c-orange" style="width:26px;height:26px;border-radius:50%;background:#d4845a;cursor:pointer;border:3px solid transparent;box-sizing:border-box;" title="Orange"></div>
-        <div onclick="cemPickColour('#e8b84b')" id="cem-c-yellow" style="width:26px;height:26px;border-radius:50%;background:#e8b84b;cursor:pointer;border:3px solid transparent;box-sizing:border-box;" title="Yellow"></div>
-        <div onclick="cemPickColour('#888')" id="cem-c-grey" style="width:26px;height:26px;border-radius:50%;background:#888;cursor:pointer;border:3px solid transparent;box-sizing:border-box;" title="Grey"></div>
-        <div onclick="cemPickColour('#1a1a1a')" id="cem-c-black" style="width:26px;height:26px;border-radius:50%;background:#1a1a1a;cursor:pointer;border:3px solid transparent;box-sizing:border-box;" title="Black"></div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;" id="cem-colour-swatches">
+        <!-- Row 1: Pinks & Reds -->
+        <div onclick="cemPickColour('#c9768a')" style="width:28px;height:28px;border-radius:50%;background:#c9768a;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Pink"></div>
+        <div onclick="cemPickColour('#e05c7a')" style="width:28px;height:28px;border-radius:50%;background:#e05c7a;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Rose"></div>
+        <div onclick="cemPickColour('#c0392b')" style="width:28px;height:28px;border-radius:50%;background:#c0392b;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Red"></div>
+        <div onclick="cemPickColour('#d4845a')" style="width:28px;height:28px;border-radius:50%;background:#d4845a;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Orange"></div>
+        <div onclick="cemPickColour('#e8b84b')" style="width:28px;height:28px;border-radius:50%;background:#e8b84b;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Yellow"></div>
+        <!-- Row 2: Greens -->
+        <div onclick="cemPickColour('#5a9e6f')" style="width:28px;height:28px;border-radius:50%;background:#5a9e6f;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Green"></div>
+        <div onclick="cemPickColour('#27ae60')" style="width:28px;height:28px;border-radius:50%;background:#27ae60;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Emerald"></div>
+        <div onclick="cemPickColour('#7dbe8c')" style="width:28px;height:28px;border-radius:50%;background:#7dbe8c;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Mint"></div>
+        <div onclick="cemPickColour('#4db6ac')" style="width:28px;height:28px;border-radius:50%;background:#4db6ac;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Teal"></div>
+        <!-- Row 3: Blues & Purples -->
+        <div onclick="cemPickColour('#5a7eb5')" style="width:28px;height:28px;border-radius:50%;background:#5a7eb5;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Blue"></div>
+        <div onclick="cemPickColour('#2980b9')" style="width:28px;height:28px;border-radius:50%;background:#2980b9;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Sky Blue"></div>
+        <div onclick="cemPickColour('#5c6bc0')" style="width:28px;height:28px;border-radius:50%;background:#5c6bc0;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Indigo"></div>
+        <div onclick="cemPickColour('#a89ac8')" style="width:28px;height:28px;border-radius:50%;background:#a89ac8;cursor:pointer;border:3px solid #a89ac8;box-sizing:border-box;transition:transform 0.12s;transform:scale(1.2);outline:3px solid #a89ac8;" title="Lavender"></div>
+        <div onclick="cemPickColour('#8e44ad')" style="width:28px;height:28px;border-radius:50%;background:#8e44ad;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Purple"></div>
+        <!-- Row 4: Neutrals -->
+        <div onclick="cemPickColour('#b5838d')" style="width:28px;height:28px;border-radius:50%;background:#b5838d;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Mauve"></div>
+        <div onclick="cemPickColour('#a0522d')" style="width:28px;height:28px;border-radius:50%;background:#a0522d;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Brown"></div>
+        <div onclick="cemPickColour('#c8a96e')" style="width:28px;height:28px;border-radius:50%;background:#c8a96e;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Gold"></div>
+        <div onclick="cemPickColour('#888888')" style="width:28px;height:28px;border-radius:50%;background:#888888;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Grey"></div>
+        <div onclick="cemPickColour('#546e7a')" style="width:28px;height:28px;border-radius:50%;background:#546e7a;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Slate"></div>
+        <div onclick="cemPickColour('#1a1a1a')" style="width:28px;height:28px;border-radius:50%;background:#1a1a1a;cursor:pointer;border:3px solid transparent;box-sizing:border-box;transition:transform 0.12s;" title="Black"></div>
       </div>
 
       <div style="display:flex;gap:8px;">
@@ -1797,12 +1819,14 @@
         ).join('');
 
         const personalChips = personal.map(e => {
-          const col = e.colour || '#a89ac8';
-          const hex2 = col.replace('#','');
-          const r3=parseInt(hex2.slice(0,2),16),g3=parseInt(hex2.slice(2,4),16),b3=parseInt(hex2.slice(4,6),16);
-          const bg2 = `rgba(${r3},${g3},${b3},0.13)`;
-          const t = e.startTime ? e.startTime+(e.endTime?'–'+e.endTime:'') : '';
-          return `<div title="${e.text}${t?' · '+t:''}" style="background:${bg2};color:${col};border:1px solid ${col}44;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${t?t+' ':''} ${e.text}</div>`;
+          try {
+            const col = (e.colour && e.colour.startsWith('#') && e.colour.length >= 7) ? e.colour : '#a89ac8';
+            const hex2 = col.replace('#','');
+            const r3=parseInt(hex2.slice(0,2),16)||168, g3=parseInt(hex2.slice(2,4),16)||154, b3=parseInt(hex2.slice(4,6),16)||200;
+            const bg2 = `rgba(${r3},${g3},${b3},0.13)`;
+            const t = e.startTime ? e.startTime+(e.endTime?'–'+e.endTime:'') : '';
+            return `<div title="${e.text||''}${t?' · '+t:''}" style="background:${bg2};color:${col};border:1px solid ${col}44;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${t?t+' ':''} ${e.text||''}</div>`;
+          } catch(err) { return ''; }
         }).join('');
 
         return `<div class="cal-day" style="min-height:52px;padding:4px;position:relative;overflow:hidden;">
@@ -2939,8 +2963,11 @@
   // ── CALENDAR ENGINE ──
   // ════════════════════════════════════════════
 
+  let calView  = 'month'; // 'month' | 'week' | 'day'
   let calYear  = new Date().getFullYear();
   let calMonth = new Date().getMonth(); // 0-based
+  let calDayDate  = new Date(); // current day for day view
+  let calWeekDate = new Date(); // any date in current week for week view
   let calPersonalEntries = JSON.parse(localStorage.getItem('sm_cal_personal') || '[]');
   // calPersonalEntries: [{id, date:'YYYY-MM-DD', text}]
 
@@ -2990,15 +3017,76 @@
       </div>`).join('');
   }
 
-  function calPrevMonth() {
-    calMonth--;
-    if (calMonth < 0) { calMonth = 11; calYear--; }
+  function calSetView(v) {
+    calView = v;
+    // Sync day/week anchors with current month view
+    if (v === 'day')  { calDayDate  = new Date(calYear, calMonth, calDayDate.getDate() <= new Date(calYear,calMonth+1,0).getDate() ? calDayDate.getDate() : 1); }
+    if (v === 'week') { calWeekDate = new Date(calYear, calMonth, 1); }
+    // Update button styles
+    ['day','week','month'].forEach(b => {
+      const el = document.getElementById('cal-view-'+b);
+      if (!el) return;
+      el.style.background = b === v ? 'var(--dark)' : 'var(--cream)';
+      el.style.color      = b === v ? 'white' : 'var(--text-light)';
+    });
     renderCalendar();
   }
-  function calNextMonth() {
-    calMonth++;
-    if (calMonth > 11) { calMonth = 0; calYear++; }
+
+  function calPrev() {
+    if (calView === 'month') {
+      calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+    } else if (calView === 'week') {
+      calWeekDate = new Date(calWeekDate); calWeekDate.setDate(calWeekDate.getDate() - 7);
+      calYear = calWeekDate.getFullYear(); calMonth = calWeekDate.getMonth();
+    } else {
+      calDayDate = new Date(calDayDate); calDayDate.setDate(calDayDate.getDate() - 1);
+      calYear = calDayDate.getFullYear(); calMonth = calDayDate.getMonth();
+    }
     renderCalendar();
+  }
+  function calNext() {
+    if (calView === 'month') {
+      calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+    } else if (calView === 'week') {
+      calWeekDate = new Date(calWeekDate); calWeekDate.setDate(calWeekDate.getDate() + 7);
+      calYear = calWeekDate.getFullYear(); calMonth = calWeekDate.getMonth();
+    } else {
+      calDayDate = new Date(calDayDate); calDayDate.setDate(calDayDate.getDate() + 1);
+      calYear = calDayDate.getFullYear(); calMonth = calDayDate.getMonth();
+    }
+    renderCalendar();
+  }
+  // Keep old names as aliases in case anything calls them
+  function calPrevMonth() { calView='month'; calMonth--; if (calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
+  function calNextMonth() { calView='month'; calMonth++; if (calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+
+  // ── Shared helpers for chip rendering ──
+  function _calBookingChips(bookings, accent) {
+    return bookings.map(c => {
+      const timeStr = c.startTime ? (c.startTime + (c.endTime ? '–'+c.endTime : '')) : '';
+      const label = c.name.split(' ')[0] + (timeStr ? ' · '+timeStr : '');
+      return `<div onclick="event.stopPropagation();calEditBookingTime(${c.id})"
+        title="${c.name} — ${c.svcType} — QAR ${(c.price||0).toLocaleString()}${timeStr?' · '+timeStr:''}\nClick to edit time"
+        style="background:${accent};color:white;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;
+          margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+          max-width:100%;letter-spacing:0.2px;line-height:1.5;">${label}</div>`;
+    }).join('');
+  }
+  function _calPersonalChips(personal, dateStr) {
+    return personal.map(e => {
+      try {
+        const col = (e.colour && e.colour.startsWith('#') && e.colour.length >= 7) ? e.colour : '#a89ac8';
+        const hx = col.replace('#','');
+        const r2=parseInt(hx.slice(0,2),16)||168, g2=parseInt(hx.slice(2,4),16)||154, b2=parseInt(hx.slice(4,6),16)||200;
+        const bg = `rgba(${r2},${g2},${b2},0.12)`;
+        const timeStr = e.startTime ? (e.startTime + (e.endTime ? '–'+e.endTime : '')) : '';
+        return `<div onclick="event.stopPropagation();calEditPersonal(${e.id},'${dateStr}')"
+          title="${e.text||''}${timeStr?' · '+timeStr:''} (click to edit)"
+          style="background:${bg};color:${col};border:1px solid ${col}44;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:600;
+            margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.5;">
+          ${timeStr?`<span style="font-size:9px;opacity:0.8;">${timeStr} </span>`:''}${e.text||''}</div>`;
+      } catch(err) { return ''; }
+    }).join('');
   }
 
   function renderCalendar() {
@@ -3006,119 +3094,199 @@
     buildCalSwatches();
 
     const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const titleYear = document.getElementById('cal-title-year');
-    const navTitle  = document.getElementById('cal-nav-title');
-    if (titleYear) titleYear.textContent = '— ' + MONTHS[calMonth] + ' ' + calYear;
-    if (navTitle)  navTitle.textContent  = MONTHS[calMonth] + ' ' + calYear;
+    const DAYS_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
     const grid = document.getElementById('cal-grid');
+    const dowHeader = document.getElementById('cal-dow-header');
     if (!grid) return;
 
     const today = new Date();
-    const todayStr = today.toISOString().slice(0,10);
+    const localDateStr = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const todayStr = localDateStr(today);
 
-    // First day of month (0=Sun…6=Sat), convert to Mon-start (0=Mon…6=Sun)
-    const firstDay = new Date(calYear, calMonth, 1).getDay();
-    const firstDayMon = (firstDay + 6) % 7; // Mon=0
-    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-    const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
-
-    // Build cells: prev-month tail + current month + next-month head
-    const totalCells = Math.ceil((firstDayMon + daysInMonth) / 7) * 7;
-    let cells = [];
-
-    for (let i = 0; i < totalCells; i++) {
-      if (i < firstDayMon) {
-        // prev month
-        const d = daysInPrev - firstDayMon + 1 + i;
-        const m = calMonth === 0 ? 12 : calMonth;
-        const y = calMonth === 0 ? calYear - 1 : calYear;
-        cells.push({ day: d, month: m - 1, year: y, outside: true });
-      } else if (i < firstDayMon + daysInMonth) {
-        const d = i - firstDayMon + 1;
-        cells.push({ day: d, month: calMonth, year: calYear, outside: false });
-      } else {
-        const d = i - firstDayMon - daysInMonth + 1;
-        const m = calMonth === 11 ? 0 : calMonth + 1;
-        const y = calMonth === 11 ? calYear + 1 : calYear;
-        cells.push({ day: d, month: m, year: y, outside: true });
-      }
-    }
-
-    // Build accent RGB for soft background
     const hex = calAccentColor.replace('#','');
     const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
-    const accentBg = `rgba(${r},${g},${b},0.10)`;
     const accentBgHover = `rgba(${r},${g},${b},0.18)`;
 
-    grid.innerHTML = cells.map(cell => {
-      const dateStr = cell.year + '-' +
-        String(cell.month + 1).padStart(2,'0') + '-' +
-        String(cell.day).padStart(2,'0');
-      const isToday = dateStr === todayStr;
-      const isOutside = cell.outside;
+    if (calView === 'day') {
+      // ── DAY VIEW ──
+      if (dowHeader) dowHeader.style.display = 'none';
+      grid.style.gridTemplateColumns = '1fr';
+      grid.style.borderRadius = '12px';
 
-      // Client bookings on this date
-      const bookings = clientsData.filter(c => c.dates && c.dates.includes(dateStr));
+      const d = calDayDate;
+      const dStr = localDateStr(d);
+      const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const titleStr = dayNames[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
 
-      // Personal entries on this date
-      const personal = calPersonalEntries.filter(e => e.date === dateStr);
+      const titleYear = document.getElementById('cal-title-year');
+      const navTitle  = document.getElementById('cal-nav-title');
+      if (titleYear) titleYear.textContent = '— ' + titleStr;
+      if (navTitle)  navTitle.textContent  = titleStr;
 
-      const bookingChips = bookings.map(c => {
-        const timeStr = c.startTime ? (c.startTime + (c.endTime ? '–'+c.endTime : '')) : '';
-        const label = c.name.split(' ')[0] + (timeStr ? ' · '+timeStr : '');
-        return `<div onclick="event.stopPropagation();calEditBookingTime(${c.id})"
-          title="${c.name} — ${c.svcType} — QAR ${(c.price||0).toLocaleString()}${timeStr?' · '+timeStr:''}\nClick to edit time"
-          style="background:${calAccentColor};color:white;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;
-            margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-            max-width:100%;letter-spacing:0.2px;line-height:1.5;">
-          ${label}
+      const bookings = clientsData.filter(c => c.dates && c.dates.includes(dStr));
+      const personal = calPersonalEntries.filter(e => e.date === dStr);
+      const isToday  = dStr === todayStr;
+
+      // Build hourly time slots 06:00 – 23:00
+      const HOURS = [];
+      for (let h = 6; h <= 23; h++) HOURS.push(h);
+
+      const timeToMins = t => { if (!t) return -1; const [hh,mm] = t.split(':').map(Number); return hh*60+(mm||0); };
+
+      const slots = HOURS.map(h => {
+        const hStr = String(h).padStart(2,'0') + ':00';
+        const hEnd  = h + 1;
+        const slotStart = h * 60, slotEnd = (h + 1) * 60;
+        const isCurrentHour = isToday && today.getHours() === h;
+
+        const slotBookings = bookings.filter(c => {
+          if (!c.startTime) return false;
+          const sm = timeToMins(c.startTime);
+          return sm >= slotStart && sm < slotEnd;
+        });
+        const noTimeBookings = h === 8 ? bookings.filter(c => !c.startTime) : [];
+        const slotPersonal = personal.filter(e => {
+          if (!e.startTime) return false;
+          const sm = timeToMins(e.startTime);
+          return sm >= slotStart && sm < slotEnd;
+        });
+        const noTimePersonal = h === 8 ? personal.filter(e => !e.startTime) : [];
+
+        const allBookings = [...slotBookings, ...noTimeBookings];
+        const allPersonal = [...slotPersonal, ...noTimePersonal];
+
+        return `<div style="display:flex;border-bottom:1px solid var(--border);min-height:52px;${isCurrentHour?'background:rgba('+r+','+g+','+b+',0.06)':''}">
+          <div style="width:60px;min-width:60px;padding:6px 10px 6px 14px;font-size:11px;font-weight:600;color:${isCurrentHour?calAccentColor:'var(--text-xlight)'};border-right:1px solid var(--border);line-height:1.2;padding-top:8px;">${hStr}</div>
+          <div onclick="openAddEntryModal('${dStr}')" style="flex:1;padding:6px 10px;cursor:pointer;transition:background 0.1s;"
+            onmouseenter="this.style.background='${accentBgHover}'" onmouseleave="this.style.background='transparent'">
+            ${_calBookingChips(allBookings, calAccentColor)}
+            ${_calPersonalChips(allPersonal, dStr)}
+          </div>
         </div>`;
       }).join('');
 
-      const personalChips = personal.map(e => {
-        const col = e.colour || '#a89ac8';
-        const hex = col.replace('#','');
-        const r2=parseInt(hex.slice(0,2),16),g2=parseInt(hex.slice(2,4),16),b2=parseInt(hex.slice(4,6),16);
-        const bg = `rgba(${r2},${g2},${b2},0.12)`;
-        const timeStr = e.startTime ? (e.startTime + (e.endTime ? '–'+e.endTime : '')) : '';
-        return `<div onclick="event.stopPropagation();calEditPersonal(${e.id},'${dateStr}')"
-          title="${e.text}${timeStr?' · '+timeStr:''} (click to edit)"
-          style="background:${bg};color:${col};border:1px solid ${col}44;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:600;
-            margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.5;">
-          ${timeStr?`<span style="font-size:9px;opacity:0.8;">${timeStr} </span>`:''}${e.text}
-        </div>`;
-      }).join('');
-
-      return `
-      <div onclick="openAddEntryModal('${dateStr}')"
-        style="background:${isOutside ? 'var(--cream-dark)' : 'var(--white)'};
-          min-height:120px;padding:8px 8px 24px;position:relative;border-right:1px solid var(--border);
-          border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;box-sizing:border-box;"
-        onmouseenter="if(!event.target.closest('[onclick*=calOpen],[onclick*=calEdit]'))this.style.background='${isOutside?'#e8e3dc':accentBgHover}'"
-        onmouseleave="this.style.background='${isOutside?'var(--cream-dark)':'var(--white)'}'">
-
-        <!-- Date number -->
-        <div style="text-align:right;margin-bottom:4px;">
-          <span style="
-            display:inline-flex;align-items:center;justify-content:center;
-            width:24px;height:24px;border-radius:50%;
-            font-size:12px;font-weight:${isToday?'800':'500'};
-            color:${isToday?'white':isOutside?'var(--text-xlight)':'var(--dark)'};
-            background:${isToday?calAccentColor:'transparent'};
-          ">${cell.day}</span>
+      grid.innerHTML = `<div style="background:var(--white);border-radius:12px;overflow:hidden;border:1px solid var(--border);">
+        <div style="padding:14px 18px;background:var(--cream);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:13px;font-weight:700;color:var(--dark);">${isToday?'<span style="background:'+calAccentColor+';color:white;border-radius:20px;padding:2px 10px;font-size:11px;margin-right:8px;">TODAY</span>':''}${titleStr}</div>
+          <button onclick="openAddEntryModal('${dStr}')" style="background:var(--dark);color:white;border:none;border-radius:7px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">+ Add Entry</button>
         </div>
-
-        <!-- Booking chips -->
-        ${bookingChips}
-        <!-- Personal chips -->
-        ${personalChips}
-
-        <!-- + add entry ghost text -->
-        <div style="position:absolute;bottom:5px;left:8px;font-size:9px;color:var(--text-xlight);opacity:0;transition:opacity 0.15s;"
-          class="cal-add-hint">+ add entry</div>
+        ${bookings.length === 0 && personal.length === 0 ? `<div style="padding:30px;text-align:center;color:var(--text-xlight);font-size:13px;">No events today — click a time slot to add one.</div>` : ''}
+        ${slots}
       </div>`;
-    }).join('');
+
+    } else if (calView === 'week') {
+      // ── WEEK VIEW ──
+      if (dowHeader) dowHeader.style.display = 'none';
+      grid.style.gridTemplateColumns = '1fr';
+      grid.style.borderRadius = '12px';
+
+      // Find Monday of calWeekDate's week
+      const wd = new Date(calWeekDate);
+      const dow = (wd.getDay() + 6) % 7; // Mon=0
+      wd.setDate(wd.getDate() - dow);
+
+      // Build 7 days Mon–Sun
+      const weekDays = [];
+      for (let i = 0; i < 7; i++) {
+        const dd = new Date(wd);
+        dd.setDate(wd.getDate() + i);
+        weekDays.push(dd);
+      }
+
+      const weekStart = localDateStr(weekDays[0]);
+      const weekEnd   = localDateStr(weekDays[6]);
+      const navTitle  = document.getElementById('cal-nav-title');
+      const titleYear = document.getElementById('cal-title-year');
+      const rangeStr  = weekDays[0].getDate() + ' – ' + weekDays[6].getDate() + ' ' + MONTHS[weekDays[6].getMonth()] + ' ' + weekDays[6].getFullYear();
+      if (navTitle)  navTitle.textContent  = rangeStr;
+      if (titleYear) titleYear.textContent = '— Week of ' + MONTHS[weekDays[0].getMonth()] + ' ' + weekDays[0].getDate();
+
+      // Week day-header row
+      const headerCols = weekDays.map((dd, i) => {
+        const dStr = localDateStr(dd);
+        const isTod = dStr === todayStr;
+        const bookCt = clientsData.filter(c => c.dates && c.dates.includes(dStr)).length;
+        return `<div style="padding:10px 6px;text-align:center;background:${isTod?calAccentColor:'var(--cream)'};color:${isTod?'white':'var(--text-xlight)'};border-right:1px solid var(--border);">
+          <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;">${DAYS_SHORT[i]}</div>
+          <div style="font-size:16px;font-weight:800;margin-top:2px;color:${isTod?'white':'var(--dark)'};">${dd.getDate()}</div>
+          ${bookCt ? `<div style="font-size:8px;font-weight:700;margin-top:2px;opacity:0.8;">${bookCt} booking${bookCt>1?'s':''}</div>` : ''}
+        </div>`;
+      }).join('');
+
+      const dayCols = weekDays.map(dd => {
+        const dStr = localDateStr(dd);
+        const isTod = dStr === todayStr;
+        const bookings = clientsData.filter(c => c.dates && c.dates.includes(dStr));
+        const personal = calPersonalEntries.filter(e => e.date === dStr);
+        const accentBg = `rgba(${r},${g},${b},0.04)`;
+        return `<div onclick="openAddEntryModal('${dStr}')" style="min-height:160px;padding:8px 6px 20px;border-right:1px solid var(--border);cursor:pointer;background:${isTod?'rgba('+r+','+g+','+b+',0.05)':'var(--white)'};transition:background 0.1s;position:relative;box-sizing:border-box;"
+          onmouseenter="this.style.background='${accentBgHover}'" onmouseleave="this.style.background='${isTod?'rgba('+r+','+g+','+b+',0.05)':'var(--white)'}'">
+          ${_calBookingChips(bookings, calAccentColor)}
+          ${_calPersonalChips(personal, dStr)}
+          <div style="position:absolute;bottom:4px;left:6px;font-size:8px;color:var(--text-xlight);opacity:0;" class="cal-add-hint">+ add</div>
+        </div>`;
+      }).join('');
+
+      grid.innerHTML = `<div style="background:var(--white);border-radius:12px;overflow:hidden;border:1px solid var(--border);">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border);">${headerCols}</div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);">${dayCols}</div>
+      </div>`;
+
+    } else {
+      // ── MONTH VIEW (default) ──
+      if (dowHeader) { dowHeader.style.display = 'grid'; dowHeader.style.gridTemplateColumns = 'repeat(7,1fr)'; }
+      grid.style.gridTemplateColumns = 'repeat(7,1fr)';
+      grid.style.borderRadius = '0 0 12px 12px';
+
+      const titleYear = document.getElementById('cal-title-year');
+      const navTitle  = document.getElementById('cal-nav-title');
+      if (titleYear) titleYear.textContent = '— ' + MONTHS[calMonth] + ' ' + calYear;
+      if (navTitle)  navTitle.textContent  = MONTHS[calMonth] + ' ' + calYear;
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const firstDayMon = (firstDay + 6) % 7;
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+      const totalCells = Math.ceil((firstDayMon + daysInMonth) / 7) * 7;
+      let cells = [];
+
+      for (let i = 0; i < totalCells; i++) {
+        if (i < firstDayMon) {
+          const d = daysInPrev - firstDayMon + 1 + i;
+          const m = calMonth === 0 ? 12 : calMonth;
+          const y = calMonth === 0 ? calYear - 1 : calYear;
+          cells.push({ day: d, month: m - 1, year: y, outside: true });
+        } else if (i < firstDayMon + daysInMonth) {
+          cells.push({ day: i - firstDayMon + 1, month: calMonth, year: calYear, outside: false });
+        } else {
+          const d = i - firstDayMon - daysInMonth + 1;
+          const m = calMonth === 11 ? 0 : calMonth + 1;
+          const y = calMonth === 11 ? calYear + 1 : calYear;
+          cells.push({ day: d, month: m, year: y, outside: true });
+        }
+      }
+
+      grid.innerHTML = cells.map(cell => {
+        const dateStr = cell.year + '-' + String(cell.month+1).padStart(2,'0') + '-' + String(cell.day).padStart(2,'0');
+        const isToday   = dateStr === todayStr;
+        const isOutside = cell.outside;
+        const bookings  = clientsData.filter(c => c.dates && c.dates.includes(dateStr));
+        const personal  = calPersonalEntries.filter(e => e.date === dateStr);
+
+        return `<div onclick="openAddEntryModal('${dateStr}')"
+          style="background:${isOutside?'var(--cream-dark)':'var(--white)'};min-height:120px;padding:8px 8px 24px;position:relative;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;box-sizing:border-box;"
+          onmouseenter="if(!event.target.closest('[onclick*=calOpen],[onclick*=calEdit]'))this.style.background='${isOutside?'#e8e3dc':accentBgHover}'"
+          onmouseleave="this.style.background='${isOutside?'var(--cream-dark)':'var(--white)'}'">
+          <div style="text-align:right;margin-bottom:4px;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:${isToday?'800':'500'};color:${isToday?'white':isOutside?'var(--text-xlight)':'var(--dark)'};background:${isToday?calAccentColor:'transparent'};">${cell.day}</span>
+          </div>
+          ${_calBookingChips(bookings, calAccentColor)}
+          ${_calPersonalChips(personal, dateStr)}
+          <div style="position:absolute;bottom:5px;left:8px;font-size:9px;color:var(--text-xlight);opacity:0;transition:opacity 0.15s;" class="cal-add-hint">+ add entry</div>
+        </div>`;
+      }).join('');
+    }
 
     // Show + add entry on hover
     const style = document.getElementById('cal-hover-style') || document.createElement('style');
