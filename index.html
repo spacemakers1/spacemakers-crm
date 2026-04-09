@@ -625,7 +625,7 @@
     <!-- BODY: 3 columns -->
     <div class="body-content">
 
-      <!-- CALENDAR -->
+      <!-- CALENDAR (dynamic) -->
       <div class="calendar-col">
         <div class="calendar-header">
           <div class="cal-legend">
@@ -633,60 +633,12 @@
             <span class="legend-dot personal" style="margin-left:6px;"></span><span>Personal / Reminder</span>
           </div>
           <div class="cal-nav">
-            <button>‹</button>
-            <span class="cal-range">8 – 21 Apr 2026</span>
-            <button>›</button>
+            <button onclick="ovCalPrev()">‹</button>
+            <span class="cal-range" id="ov-cal-range"></span>
+            <button onclick="ovCalNext()">›</button>
           </div>
         </div>
-
-        <!-- Week 1 -->
-        <div class="week-block">
-          <div class="week-label">WEEK 1 · 8 – 14 Apr</div>
-          <div class="cal-grid">
-            <div class="cal-day-header">Mon</div>
-            <div class="cal-day-header">Tue</div>
-            <div class="cal-day-header">Wed</div>
-            <div class="cal-day-header">Thu</div>
-            <div class="cal-day-header">Fri</div>
-            <div class="cal-day-header">Sat</div>
-            <div class="cal-day-header">Sun</div>
-            <!-- Days 8-14 -->
-            <div class="cal-day"><div class="day-num today">8</div></div>
-            <div class="cal-day"><div class="day-num">9</div></div>
-            <div class="cal-day"><div class="day-num">10</div></div>
-            <div class="cal-day"><div class="day-num">11</div></div>
-            <div class="cal-day"><div class="day-num">12</div></div>
-            <div class="cal-day"><div class="day-num">13</div></div>
-            <div class="cal-day"><div class="day-num">14</div></div>
-            <div class="add-personal" onclick="openModal('personal')">
-              <span style="color:var(--pink)">●</span> + Add personal entry or reminder...
-            </div>
-          </div>
-        </div>
-
-        <!-- Week 2 -->
-        <div class="week-block">
-          <div class="week-label">WEEK 2 · 15 – 21 Apr</div>
-          <div class="cal-grid">
-            <div class="cal-day-header">Mon</div>
-            <div class="cal-day-header">Tue</div>
-            <div class="cal-day-header">Wed</div>
-            <div class="cal-day-header">Thu</div>
-            <div class="cal-day-header">Fri</div>
-            <div class="cal-day-header">Sat</div>
-            <div class="cal-day-header">Sun</div>
-            <div class="cal-day"><div class="day-num">15</div></div>
-            <div class="cal-day"><div class="day-num">16</div></div>
-            <div class="cal-day"><div class="day-num">17</div></div>
-            <div class="cal-day"><div class="day-num">18</div></div>
-            <div class="cal-day"><div class="day-num">19</div></div>
-            <div class="cal-day"><div class="day-num">20</div></div>
-            <div class="cal-day"><div class="day-num">21</div></div>
-            <div class="add-personal" onclick="openModal('personal')">
-              <span style="color:var(--pink)">●</span> + Add personal entry or reminder...
-            </div>
-          </div>
-        </div>
+        <div id="overview-mini-cal"></div>
       </div>
 
       <!-- UPCOMING BOOKINGS + REVENUE CHART -->
@@ -1581,6 +1533,110 @@
       return dt && dt.getFullYear() === thisYear;
     }).reduce((s,c) => s+(c.price||0), 0);
     if (el('chart-ytd')) el('chart-ytd').textContent = 'QAR ' + ytd.toLocaleString() + ' YTD';
+
+    // ── Overview mini-calendar ──
+    renderOverviewCal();
+  }
+
+  // ── Overview mini-calendar state ──
+  let ovCalWeekStart = null; // Monday of current 2-week window
+
+  function ovCalInit() {
+    // Start at the Monday of the current week
+    const today = new Date();
+    const dow = today.getDay(); // 0=Sun
+    const diff = (dow === 0) ? -6 : 1 - dow; // shift to Monday
+    const mon = new Date(today);
+    mon.setDate(today.getDate() + diff);
+    mon.setHours(0,0,0,0);
+    ovCalWeekStart = mon;
+  }
+
+  function ovCalPrev() {
+    if (!ovCalWeekStart) ovCalInit();
+    ovCalWeekStart = new Date(ovCalWeekStart);
+    ovCalWeekStart.setDate(ovCalWeekStart.getDate() - 14);
+    renderOverviewCal();
+  }
+
+  function ovCalNext() {
+    if (!ovCalWeekStart) ovCalInit();
+    ovCalWeekStart = new Date(ovCalWeekStart);
+    ovCalWeekStart.setDate(ovCalWeekStart.getDate() + 14);
+    renderOverviewCal();
+  }
+
+  function renderOverviewCal() {
+    if (!ovCalWeekStart) ovCalInit();
+    const container = document.getElementById('overview-mini-cal');
+    const rangeEl   = document.getElementById('ov-cal-range');
+    if (!container) return;
+
+    const personalEntries = JSON.parse(localStorage.getItem('sm_cal_personal') || '[]');
+    const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const todayStr = new Date().toISOString().slice(0,10);
+    const accentColor = localStorage.getItem('sm_cal_accent') || '#c9768a';
+
+    // Build 14-day window (2 weeks)
+    const days = [];
+    for (let i=0; i<14; i++) {
+      const d = new Date(ovCalWeekStart);
+      d.setDate(ovCalWeekStart.getDate() + i);
+      days.push(d);
+    }
+
+    // Range label
+    const w1start = days[0], w2end = days[13];
+    const sameMonth = w1start.getMonth() === w2end.getMonth();
+    if (rangeEl) {
+      rangeEl.textContent = sameMonth
+        ? `${w1start.getDate()} – ${w2end.getDate()} ${MONTHS_SHORT[w1start.getMonth()]} ${w1start.getFullYear()}`
+        : `${w1start.getDate()} ${MONTHS_SHORT[w1start.getMonth()]} – ${w2end.getDate()} ${MONTHS_SHORT[w2end.getMonth()]} ${w2end.getFullYear()}`;
+    }
+
+    // Render weeks
+    const renderWeek = (weekDays, weekNum) => {
+      const weekLabel = (() => {
+        const s = weekDays[0], e = weekDays[6];
+        const sm = MONTHS_SHORT[s.getMonth()], em = MONTHS_SHORT[e.getMonth()];
+        return `WEEK ${weekNum} · ${s.getDate()} – ${e.getDate()} ${sm !== em ? sm + ' / ' + em : sm}`;
+      })();
+
+      const dayCells = weekDays.map(d => {
+        const dateStr = d.toISOString().slice(0,10);
+        const isToday = dateStr === todayStr;
+        const bookings = clientsData.filter(c => c.dates && c.dates.includes(dateStr));
+        const personal = personalEntries.filter(e => e.date === dateStr);
+
+        const bookingChips = bookings.map(c =>
+          `<div onclick="showPageDirect('calendar')" title="${c.name} — ${c.svcType}" style="background:${accentColor};color:white;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;margin-top:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${c.name.split(' ')[0]}</div>`
+        ).join('');
+
+        const personalChips = personal.map(e =>
+          `<div title="${e.text}" style="background:#f0ecf8;color:#6a5aa0;border:1px solid #c8bce8;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">□ ${e.text}</div>`
+        ).join('');
+
+        return `<div class="cal-day" style="min-height:52px;padding:4px;position:relative;overflow:hidden;">
+          <div class="day-num${isToday?' today':''}" style="${isToday?'background:'+accentColor+';color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;':''}">${d.getDate()}</div>
+          ${bookingChips}${personalChips}
+        </div>`;
+      }).join('');
+
+      return `
+        <div class="week-block">
+          <div class="week-label">${weekLabel}</div>
+          <div class="cal-grid">
+            ${DAYS.map(day=>`<div class="cal-day-header">${day}</div>`).join('')}
+            ${dayCells}
+            <div class="add-personal" onclick="openAddEntryModal(null)" style="grid-column:1/-1;">
+              <span style="color:var(--pink)">●</span> + Add personal entry or reminder...
+            </div>
+          </div>
+        </div>`;
+    };
+
+    container.innerHTML = renderWeek(days.slice(0,7), 1) + renderWeek(days.slice(7,14), 2);
   }
 
   function renderClients() {
