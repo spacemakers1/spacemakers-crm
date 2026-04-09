@@ -685,7 +685,8 @@
       <div class="reminders-col">
         <div class="reminders-panel">
           <div class="panel-header">
-            <span class="panel-title">Reminders</span>
+            <span class="panel-title" id="overview-reminders-title">Reminders</span>
+            <span id="overview-reminders-clear" onclick="ovSelectClient(ovSelectedClientId)" style="display:none;font-size:10px;color:var(--pink);cursor:pointer;font-weight:600;">Show all ×</span>
           </div>
           <div id="overview-reminders-list" style="padding:20px;text-align:center;color:var(--text-xlight);font-size:11px;">
             No reminders yet.<br>Add a client to see their reminders here.
@@ -1522,7 +1523,7 @@
           const nextDate = c.dates.filter(d=>d>=todayStr).sort()[0];
           const dt = new Date(nextDate);
           const day = dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-          return `<div class="booking-item">
+          return `<div class="booking-item" id="ov-bk-${c.id}" onclick="ovSelectClient(${c.id})" style="cursor:pointer;border-radius:10px;padding:8px 10px;transition:background 0.15s;" onmouseenter="if(ovSelectedClientId!==${c.id})this.style.background='var(--cream)'" onmouseleave="if(ovSelectedClientId!==${c.id})this.style.background=''">
             <div class="booking-avatar">${c.initials||'?'}</div>
             <div class="booking-info">
               <div class="booking-name">${c.name}</div>
@@ -1536,25 +1537,84 @@
     }
 
     // ── Reminders panel (overview) ──
-    const remindersEl = el('overview-reminders-list');
-    if (remindersEl) {
-      const pendingList = [];
-      clientsData.forEach(c => {
-        (c.reminders||[]).forEach((r,i) => {
-          if (!r.sent) pendingList.push({ client: c, idx: i });
-        });
-      });
-      if (pendingList.length === 0) {
-        remindersEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-xlight);font-size:11px;">No pending reminders.</div>`;
+    renderOverviewReminders();
+  }
+
+  // ── Overview reminders — filterable by selected client ──
+  let ovSelectedClientId = null;
+
+  function ovSelectClient(id) {
+    // Toggle: click same client again to deselect (show all)
+    ovSelectedClientId = (ovSelectedClientId === id) ? null : id;
+
+    // Update highlight on booking rows
+    document.querySelectorAll('[id^="ov-bk-"]').forEach(row => {
+      const rowId = parseInt(row.id.replace('ov-bk-',''));
+      if (ovSelectedClientId === null) {
+        row.style.background = '';
+        row.style.outline = '';
+      } else if (rowId === ovSelectedClientId) {
+        row.style.background = 'var(--pink-pale)';
+        row.style.outline = '2px solid var(--pink-light)';
       } else {
-        remindersEl.innerHTML = pendingList.slice(0,6).map(({client:c, idx:i}) => `
-          <div class="reminder-item">
-            <div class="reminder-dot dot-orange"></div>
-            <div class="reminder-label"><strong>${c.name}</strong> — ${REMINDER_LABELS[i]?.short||''}</div>
-            <span class="reminder-badge badge-not-sent">Pending</span>
-          </div>`).join('');
+        row.style.background = '';
+        row.style.outline = '';
+        row.style.opacity = '0.5';
       }
+    });
+    if (ovSelectedClientId === null) {
+      document.querySelectorAll('[id^="ov-bk-"]').forEach(r => r.style.opacity = '');
     }
+
+    renderOverviewReminders();
+  }
+
+  function renderOverviewReminders() {
+    const remindersEl = document.getElementById('overview-reminders-list');
+    const titleEl     = document.getElementById('overview-reminders-title');
+    if (!remindersEl) return;
+
+    const filterClient = ovSelectedClientId ? clientsData.find(x=>x.id===ovSelectedClientId) : null;
+    const sourceData   = filterClient ? [filterClient] : clientsData;
+
+    // Update panel title + clear button
+    if (titleEl) titleEl.textContent = filterClient ? `${filterClient.name}'s Reminders` : 'Reminders';
+    const clearEl = document.getElementById('overview-reminders-clear');
+    if (clearEl) clearEl.style.display = filterClient ? 'inline' : 'none';
+
+    const pendingList = [];
+    sourceData.forEach(c => {
+      (c.reminders||[]).forEach((r,i) => {
+        pendingList.push({ client: c, idx: i, sent: r.sent });
+      });
+    });
+
+    if (pendingList.length === 0) {
+      remindersEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-xlight);font-size:11px;">No reminders${filterClient?' for '+filterClient.name:''}.</div>`;
+      return;
+    }
+
+    remindersEl.innerHTML = pendingList.map(({client:c, idx:i, sent}) => `
+      <div class="reminder-item" onclick="ovToggleReminder(${c.id},${i})" style="cursor:pointer;transition:background 0.15s;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''">
+        <div class="reminder-dot ${sent?'dot-green':'dot-orange'}"></div>
+        <div class="reminder-label">
+          ${!filterClient?`<strong>${c.name}</strong> — `:''}${REMINDER_LABELS[i]?.full||''}
+          <div style="font-size:9px;color:var(--text-xlight);margin-top:1px;">${REMINDER_LABELS[i]?.when||''}</div>
+        </div>
+        <span class="reminder-badge ${sent?'badge-sent':'badge-not-sent'}">${sent?'✓ Sent':'Pending'}</span>
+      </div>`).join('');
+  }
+
+  function ovToggleReminder(clientId, idx) {
+    const c = clientsData.find(x=>x.id===clientId);
+    if (!c || !c.reminders) return;
+    c.reminders[idx].sent = !c.reminders[idx].sent;
+    saveData();
+    renderOverviewReminders();
+    // Also update the stat counter
+    const pendingReminders = clientsData.reduce((s,c)=>(s+(c.reminders||[]).filter(r=>!r.sent).length),0);
+    const el = document.getElementById('stat-reminders');
+    if (el) el.textContent = pendingReminders;
 
     // ── Revenue chart YTD ──
     const ytd = clientsData.filter(c => {
