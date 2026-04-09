@@ -1423,6 +1423,9 @@
 
   let activeFilter = 'ALL';
 
+  // ── Global status map (used by saveBooking + updateBooking) ──
+  const statusMap = { 'Deep Cleaning':'Service Day','Move In/Out':'Service Day','Post Construction':'Service Day','Regular':'Service Day','Carpet':'Service Day','Sofa':'Service Day','Consultation':'Consultation','Service Day':'Service Day','Consultation Appointment':'Consultation','Shopping for Client':'Scheduled','Other':'Proposal' };
+
   function svcTagClass(status) {
     if (status==='Service Day') return 'svc-service';
     if (status==='Consultation') return 'svc-consult';
@@ -1857,7 +1860,7 @@
     const otHours     = parseFloat(document.getElementById('f-overtime-hours')?.value)||0;
     const otRate      = parseFloat(document.getElementById('f-overtime-rate')?.value)||0;
 
-    const statusMap = { 'Service Day':'Service Day','Consultation Appointment':'Consultation','Shopping for Client':'Scheduled','Other':'Proposal' };
+    // statusMap is global — defined near clientsData
 
     // Build the 6 reminders array (all pending by default)
     const reminders = REMINDER_LABELS.map(() => ({ sent: false }));
@@ -2013,6 +2016,7 @@
     c.status = statusMap[c.svcType] || c.status;
     renderClients();
     renderAllClients();
+    if (document.getElementById('page-calendar')?.style.display !== 'none') renderCalendar();
     alert(`✅ ${c.name}'s booking has been updated.`);
     clearForm();
   }
