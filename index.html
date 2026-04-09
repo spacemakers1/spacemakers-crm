@@ -1167,7 +1167,45 @@
     <div style="padding:20px 28px;flex:1;overflow-y:auto;"><div style="background:white;border-radius:12px;border:1px solid var(--border);padding:24px;text-align:center;color:var(--text-light);font-size:13px;"><div style="font-size:32px;margin-bottom:8px;">💬</div><div style="font-weight:600;font-size:15px;color:var(--dark);margin-bottom:6px;">WhatsApp Scheduler</div><div>Schedule messages using pre-saved templates or custom messages.<br>Auto-sends via WATI + Zapier integration.</div></div></div>
   </div>
 
+  <!-- ══ CLIENT PROFILE PAGE ══ -->
+  <div id="page-clientprofile" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:var(--cream);">
+    <!-- Top bar -->
+    <div style="background:var(--white);border-bottom:1px solid var(--border);padding:16px 28px;flex-shrink:0;display:flex;align-items:center;gap:16px;">
+      <button onclick="showPageDirect('allclients')" style="background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;color:var(--text);letter-spacing:0.3px;display:flex;align-items:center;gap:6px;">← All Clients</button>
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--text-xlight);letter-spacing:1px;text-transform:uppercase;">Client Profile</div>
+        <div id="cp-header-name" style="font-size:20px;font-weight:900;color:var(--dark);letter-spacing:-0.5px;"></div>
+      </div>
+      <button onclick="cpEditLatest()" style="background:var(--dark);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.5px;">✏️ Edit Latest Booking</button>
+      <button onclick="cpWhatsapp()" style="background:#25d366;color:white;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.5px;">💬 WhatsApp</button>
+    </div>
+    <!-- Body -->
+    <div style="flex:1;overflow-y:auto;padding:24px 28px;" id="cp-body"></div>
+  </div>
+
 </div><!-- end main -->
+
+<!-- ══ ADD PROPOSAL MODAL ══ -->
+<div id="cp-proposal-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9500;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:18px;padding:28px;width:440px;box-shadow:0 24px 64px rgba(0,0,0,0.2);position:relative;">
+    <button onclick="document.getElementById('cp-proposal-modal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-xlight);">×</button>
+    <div style="font-size:16px;font-weight:900;color:var(--dark);margin-bottom:18px;letter-spacing:-0.3px;">📄 Add Proposal</div>
+
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-xlight);margin-bottom:4px;">Proposal Label</div>
+    <input id="cp-p-label" type="text" placeholder="e.g. Deep Clean Proposal — Apr 2026" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;background:var(--cream);margin-bottom:14px;outline:none;color:var(--dark);"/>
+
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-xlight);margin-bottom:4px;">PDF / File Link <span style="font-weight:400;text-transform:none;font-size:10px;">(Google Drive, Dropbox, WhatsApp link…)</span></div>
+    <input id="cp-p-url" type="url" placeholder="https://drive.google.com/..." style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;background:var(--cream);margin-bottom:14px;outline:none;color:var(--dark);"/>
+
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-xlight);margin-bottom:4px;">Notes <span style="font-weight:400;text-transform:none;">(optional)</span></div>
+    <textarea id="cp-p-notes" placeholder="e.g. Version 2 after client feedback, includes extra room" style="width:100%;min-height:70px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;background:var(--cream);margin-bottom:18px;outline:none;color:var(--dark);resize:vertical;"></textarea>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="cpSaveProposal()" style="flex:1;background:var(--dark);color:white;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Save Proposal</button>
+      <button onclick="document.getElementById('cp-proposal-modal').style.display='none'" style="flex:0 0 auto;background:var(--cream);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:11px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══ NEW BOOKING MODAL ══ -->
 <div class="modal-overlay" id="modal-booking">
@@ -1300,7 +1338,7 @@
   document.getElementById('today-date').textContent = now.toLocaleDateString('en-GB', opts);
 
   // ── Navigation ──
-  const pages = ['overview','allclients','clients','calendar','reminders','revenue','transport','teams','whatsapp'];
+  const pages = ['overview','allclients','clients','calendar','reminders','revenue','transport','teams','whatsapp','clientprofile'];
   function showPage(name) {
     pages.forEach(p => {
       const el = document.getElementById('page-'+p);
@@ -2269,6 +2307,235 @@
     }).join('');
   }
 
+  // ── Client Profile Page ──
+  let cpClientName = ''; // the client name group currently shown
+
+  function openClientProfile(bookingId) {
+    const bk = clientsData.find(x => x.id === bookingId);
+    if (!bk) return;
+    cpClientName = bk.name.trim().toLowerCase();
+    renderClientProfile();
+    showPageDirect('clientprofile');
+  }
+
+  function renderClientProfile() {
+    const body = document.getElementById('cp-body');
+    const headerName = document.getElementById('cp-header-name');
+    if (!body) return;
+
+    // All bookings for this client (by name)
+    const allBookings = clientsData
+      .filter(c => c.name.trim().toLowerCase() === cpClientName)
+      .sort((a,b) => {
+        const da = a.dates&&a.dates[0]?a.dates[0]:'';
+        const db = b.dates&&b.dates[0]?b.dates[0]:'';
+        return db.localeCompare(da);
+      });
+
+    if (allBookings.length === 0) { body.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-xlight);">No bookings found.</div>'; return; }
+
+    const first = allBookings[0];
+    if (headerName) headerName.textContent = first.name;
+
+    // Aggregates
+    const totalRevenue = allBookings.reduce((s,b)=>s+(b.price||0),0);
+    const totalCollected = allBookings.reduce((s,b)=>s+(b.depositPaid?b.deposit||0:0)+(b.balancePaid?b.balance||0:0),0);
+    const totalOutstanding = totalRevenue - totalCollected;
+
+    // Group bookings by month
+    const byMonth = {};
+    allBookings.forEach(bk => {
+      const d = bk.dates&&bk.dates[0] ? bk.dates[0] : 'undated';
+      const key = d === 'undated' ? 'No Date' : d.slice(0,7); // YYYY-MM
+      if (!byMonth[key]) byMonth[key] = [];
+      byMonth[key].push(bk);
+    });
+
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const monthLabel = k => {
+      if (k === 'No Date') return 'No Date Set';
+      const [y,m] = k.split('-');
+      return MONTHS[parseInt(m)-1] + ' ' + y;
+    };
+
+    // Proposals (stored on the first booking record for this client name, or spread across bookings)
+    // We use a shared proposals array stored on all bookings — we read from first, write to all
+    const proposals = first.proposals || [];
+
+    body.innerHTML = `
+      <!-- ── HERO CARD ── -->
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;display:flex;align-items:center;gap:20px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--pink);color:white;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:1px;">${first.initials||first.name.slice(0,2).toUpperCase()}</div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
+            <div style="font-size:22px;font-weight:900;color:var(--dark);letter-spacing:-0.5px;">${first.name}</div>
+            ${allBookings.length > 1 ? '<span style="background:#e8f7ee;color:#2e7d52;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.5px;">⭐ REPEAT CLIENT</span>' : ''}
+          </div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-light);">
+            ${first.phone ? `<span>📞 ${first.phone}</span>` : ''}
+            ${first.area ? `<span>📍 ${first.area}</span>` : ''}
+            ${first.maps ? `<a href="${first.maps}" target="_blank" style="color:var(--pink);font-weight:600;">🗺 View Map</a>` : ''}
+            ${first.housenumber ? `<span>🏠 ${first.housenumber}</span>` : ''}
+            ${first.lang ? `<span>🌐 ${first.lang}</span>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="text-align:center;background:var(--cream);border-radius:12px;padding:12px 20px;">
+            <div style="font-size:20px;font-weight:900;color:var(--dark);">QAR ${totalRevenue.toLocaleString()}</div>
+            <div style="font-size:10px;color:var(--text-xlight);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Total Revenue</div>
+          </div>
+          <div style="text-align:center;background:#e8f7ee;border-radius:12px;padding:12px 20px;">
+            <div style="font-size:20px;font-weight:900;color:#2e7d52;">QAR ${totalCollected.toLocaleString()}</div>
+            <div style="font-size:10px;color:#2e7d52;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Collected</div>
+          </div>
+          ${totalOutstanding > 0 ? `<div style="text-align:center;background:#fff4e8;border-radius:12px;padding:12px 20px;">
+            <div style="font-size:20px;font-weight:900;color:#b85c00;">QAR ${totalOutstanding.toLocaleString()}</div>
+            <div style="font-size:10px;color:#b85c00;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Outstanding</div>
+          </div>` : ''}
+          <div style="text-align:center;background:var(--pink-pale);border-radius:12px;padding:12px 20px;">
+            <div style="font-size:20px;font-weight:900;color:var(--pink-dark);">${allBookings.length}</div>
+            <div style="font-size:10px;color:var(--pink-dark);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Booking${allBookings.length!==1?'s':''}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start;">
+
+        <!-- ── LEFT: BOOKING HISTORY ── -->
+        <div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);margin-bottom:12px;">Booking History</div>
+          ${Object.keys(byMonth).sort((a,b)=>b.localeCompare(a)).map(k => `
+            <div style="margin-bottom:16px;">
+              <div style="font-size:12px;font-weight:800;color:var(--dark);margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+                <span style="background:var(--pink-pale);color:var(--pink-dark);padding:3px 10px;border-radius:20px;font-size:10px;letter-spacing:0.5px;">${monthLabel(k)}</span>
+                <span style="font-size:10px;color:var(--text-xlight);">${byMonth[k].length} booking${byMonth[k].length!==1?'s':''}</span>
+              </div>
+              ${byMonth[k].map(bk => `
+                <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:8px;">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                    <div style="flex:1;">
+                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                        <span class="svc-tag ${svcTagClass(bk.status)}">${bk.svcType||bk.status}</span>
+                        <span style="font-size:12px;color:var(--text-light);">📅 ${bk.dates&&bk.dates.length?bk.dates.map(d=>formatDate(d)).join(', '):'No date set'}</span>
+                        <span style="font-size:11px;color:var(--text-xlight);">⏱ ${bk.duration||''}</span>
+                      </div>
+                      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;">
+                        <span style="color:var(--dark);font-weight:700;">QAR ${(bk.price||0).toLocaleString()}</span>
+                        <span style="${bk.depositPaid?'color:#2e7d52;':'color:#b85c00;'}font-weight:600;">Deposit: ${bk.depositPaid?'✓ Paid':'⏳ Pending'}</span>
+                        <span style="${bk.balancePaid?'color:#2e7d52;':'color:#b85c00;'}font-weight:600;">Balance: ${bk.balancePaid?'✓ Paid':'⏳ Pending'}</span>
+                      </div>
+                      ${bk.notes ? `<div style="margin-top:6px;font-size:11px;color:var(--text-light);background:var(--cream);padding:6px 10px;border-radius:6px;">📝 ${bk.notes}</div>` : ''}
+                    </div>
+                    <button onclick="editClient(${bk.id})" style="background:var(--pink-pale);color:var(--pink-dark);border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;">✏️ Edit</button>
+                  </div>
+                  <!-- Reminders row -->
+                  <div style="display:flex;gap:4px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;">
+                    ${(bk.reminders||[]).map((r,i)=>`
+                      <div onclick="toggleReminder(${bk.id},${i})" title="${REMINDER_LABELS[i].full}" style="padding:3px 8px;border-radius:6px;font-size:9px;font-weight:700;cursor:pointer;border:1px solid ${r.sent?'#2e7d52':'var(--border)'};background:${r.sent?'#e8f7ee':'var(--cream)'};color:${r.sent?'#2e7d52':'var(--text-xlight)'};transition:all 0.15s;">
+                        ${r.sent?'✓':''} ${['Post-Consult','Proposal','3 Days','1 Day','Morning','Post-Service'][i]}
+                      </div>`).join('')}
+                  </div>
+                </div>`).join('')}
+            </div>`).join('')}
+        </div>
+
+        <!-- ── RIGHT: PROPOSALS + NOTES ── -->
+        <div style="position:sticky;top:0;">
+
+          <!-- PROPOSALS -->
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);">Proposals</div>
+              <button onclick="cpAddProposal()" style="background:var(--dark);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">+ Add</button>
+            </div>
+            <div id="cp-proposals-list">
+              ${proposals.length === 0 ? `<div style="text-align:center;padding:20px 0;color:var(--text-xlight);font-size:12px;">No proposals yet.<br><span style="font-size:11px;">Add a PDF link or document URL.</span></div>` :
+                proposals.map((p,i) => `
+                  <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--cream);border-radius:8px;margin-bottom:6px;border:1px solid var(--border);">
+                    <span style="font-size:16px;">📄</span>
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:12px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.label||'Proposal '+(i+1)}</div>
+                      ${p.url ? `<a href="${p.url}" target="_blank" style="font-size:10px;color:var(--pink);text-decoration:none;font-weight:600;">🔗 Open PDF / File</a>` : ''}
+                      ${p.notes ? `<div style="font-size:10px;color:var(--text-light);margin-top:2px;">${p.notes}</div>` : ''}
+                      <div style="font-size:9px;color:var(--text-xlight);margin-top:1px;">${p.date||''}</div>
+                    </div>
+                    <button onclick="cpDeleteProposal(${i})" style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--text-xlight);padding:2px;">🗑</button>
+                  </div>`).join('')}
+            </div>
+          </div>
+
+          <!-- QUICK NOTES -->
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;">
+            <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-xlight);margin-bottom:10px;">Client Notes</div>
+            <textarea id="cp-notes-field" placeholder="Add notes about this client — preferences, special requirements, feedback..." oninput="cpSaveNotes()" style="width:100%;min-height:100px;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:12px;font-family:'Inter',sans-serif;background:var(--cream);color:var(--dark);resize:vertical;outline:none;line-height:1.5;">${first.clientNotes||''}</textarea>
+            <div style="font-size:10px;color:var(--text-xlight);margin-top:4px;">Auto-saved ✓</div>
+          </div>
+
+        </div>
+      </div>
+    `;
+  }
+
+  function cpEditLatest() {
+    const allBookings = clientsData.filter(c => c.name.trim().toLowerCase() === cpClientName);
+    if (!allBookings.length) return;
+    const latest = allBookings.sort((a,b)=>(b.dates&&b.dates[0]?b.dates[0]:'').localeCompare(a.dates&&a.dates[0]?a.dates[0]:''))[0];
+    editClient(latest.id);
+  }
+
+  function cpWhatsapp() {
+    const allBookings = clientsData.filter(c => c.name.trim().toLowerCase() === cpClientName);
+    const phone = allBookings[0]?.phone;
+    if (!phone) { alert('No phone number saved for this client.'); return; }
+    const clean = phone.replace(/[^0-9+]/g,'');
+    window.open('https://wa.me/' + clean, '_blank');
+  }
+
+  function cpSaveNotes() {
+    const val = document.getElementById('cp-notes-field')?.value || '';
+    clientsData.forEach(c => { if (c.name.trim().toLowerCase() === cpClientName) c.clientNotes = val; });
+    saveData();
+  }
+
+  function cpAddProposal() {
+    // Show inline modal
+    const existing = clientsData.find(c => c.name.trim().toLowerCase() === cpClientName);
+    const modal = document.getElementById('cp-proposal-modal');
+    document.getElementById('cp-p-label').value = '';
+    document.getElementById('cp-p-url').value = '';
+    document.getElementById('cp-p-notes').value = '';
+    modal.style.display = 'flex';
+  }
+
+  function cpSaveProposal() {
+    const label = document.getElementById('cp-p-label').value.trim() || ('Proposal ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}));
+    const url   = document.getElementById('cp-p-url').value.trim();
+    const notes = document.getElementById('cp-p-notes').value.trim();
+    const date  = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const proposal = { label, url, notes, date };
+    // Add to all bookings for this client
+    clientsData.forEach(c => {
+      if (c.name.trim().toLowerCase() === cpClientName) {
+        if (!c.proposals) c.proposals = [];
+        c.proposals.push(proposal);
+      }
+    });
+    saveData();
+    document.getElementById('cp-proposal-modal').style.display = 'none';
+    renderClientProfile();
+  }
+
+  function cpDeleteProposal(idx) {
+    if (!confirm('Remove this proposal?')) return;
+    clientsData.forEach(c => {
+      if (c.name.trim().toLowerCase() === cpClientName && c.proposals) {
+        c.proposals.splice(idx, 1);
+      }
+    });
+    saveData();
+    renderClientProfile();
+  }
+
   function showPageDirect(name) {
     pages.forEach(p => {
       const el = document.getElementById('page-'+p);
@@ -2297,66 +2564,123 @@
     }, 50);
   }
 
-  // ── Export to Excel (CSV) ──
+  // ── Export to CSV (Excel-compatible) ──
   function exportClients() {
-    const headers = ['ID','Name','Phone','Area','Service Type','Duration','Date','Price (QAR)','Deposit (QAR)','Balance (QAR)','Deposit Paid','Balance Paid','Language','Status','Notes'];
+    const headers = [
+      'Name','Phone','Area','House/Villa No','Service Type','Duration','Language',
+      'Dates (all)','First Date','Price (QAR)','Deposit (QAR)','Balance (QAR)',
+      'Deposit Paid','Balance Paid','Status','Overtime','OT Hours','OT Rate','Notes','Maps Link'
+    ];
     const rows = clientsData.map(c => [
-      c.id, c.name, c.phone, c.area, c.svcType, c.duration,
-      c.dates[0]||'', c.price, c.deposit, c.balance,
+      c.name, c.phone||'', c.area||'', c.housenumber||'',
+      c.svcType||'', c.duration||'', c.lang||'',
+      (c.dates||[]).join(' | '), (c.dates&&c.dates[0])||'',
+      c.price||0, c.deposit||0, c.balance||0,
       c.depositPaid?'Yes':'No', c.balancePaid?'Yes':'No',
-      c.lang, c.status, c.notes
+      c.status||'', c.isOvertime?'Yes':'No', c.otHours||0, c.otRate||0,
+      c.notes||'', c.maps||''
     ]);
-    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], {type:'text/csv'});
+    const BOM = '\uFEFF'; // UTF-8 BOM for Excel
+    const csv = BOM + [headers, ...rows].map(r =>
+      r.map(v => `"${String(v===null||v===undefined?'':v).replace(/"/g,'""')}"`).join(',')
+    ).join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'SpaceMakers_Clients_' + new Date().toISOString().slice(0,10) + '.csv';
-    a.click(); URL.revokeObjectURL(url);
+    a.href = url;
+    a.download = 'SpaceMakers_Clients_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
 
-  // ── Import from Excel/CSV ──
+  // ── Import from CSV/Excel ──
   function importClients(input) {
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(e) {
-      const text = e.target.result;
-      const lines = text.trim().split('\n');
-      const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim().toLowerCase());
-      let imported = 0;
-      for (let i=1; i<lines.length; i++) {
-        const vals = lines[i].split(',').map(v => v.replace(/^"|"$/g,'').trim());
-        const obj = {};
-        headers.forEach((h,idx) => obj[h] = vals[idx]||'');
-        if (!obj['name'] && !obj['client name']) continue;
-        const name = obj['name'] || obj['client name'] || 'Unknown';
-        const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-        clientsData.push({
-          id: clientsData.length+1, name, initials,
-          phone: obj['phone']||obj['phone number']||'',
-          area: obj['area']||obj['location']||'',
-          maps:'',
-          svcType: obj['service type']||'Service Day',
-          duration: obj['duration']||'Full Day',
-          dates: obj['date'] ? [obj['date']] : [],
-          transport: parseFloat(obj['transport']||0),
-          price: parseFloat(obj['price (qar)']||obj['price']||0),
-          deposit: parseFloat(obj['deposit (qar)']||obj['deposit']||0),
-          balance: parseFloat(obj['balance (qar)']||obj['balance']||0),
-          depositPaid: (obj['deposit paid']||'').toLowerCase()==='yes',
-          balancePaid: (obj['balance paid']||'').toLowerCase()==='yes',
-          lang: obj['language']||'English',
-          notes: obj['notes']||'',
-          status: obj['status']||'Service Day',
-          progress: [1,0,0,0,0,0]
+      const text = e.target.result.replace(/^\uFEFF/,''); // strip BOM
+      // Simple CSV parser that handles quoted fields
+      function parseCSV(str) {
+        const rows = [];
+        const lines = str.split(/\r?\n/);
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const row = [];
+          let cur = '', inQ = false;
+          for (let i=0; i<line.length; i++) {
+            const ch = line[i];
+            if (ch==='"') {
+              if (inQ && line[i+1]==='"') { cur+='"'; i++; }
+              else inQ = !inQ;
+            } else if (ch===',' && !inQ) { row.push(cur.trim()); cur=''; }
+            else cur+=ch;
+          }
+          row.push(cur.trim());
+          rows.push(row);
+        }
+        return rows;
+      }
+
+      const parsed = parseCSV(text);
+      if (parsed.length < 2) { alert('File appears empty or has no data rows.'); return; }
+
+      const rawHeaders = parsed[0].map(h=>h.toLowerCase().replace(/[^a-z0-9]/g,' ').trim());
+      const col = name => rawHeaders.findIndex(h=>h.includes(name));
+
+      let imported = 0, skipped = 0;
+      for (let i=1; i<parsed.length; i++) {
+        const v = parsed[i];
+        const get = name => { const idx=col(name); return idx>=0?(v[idx]||''):''; };
+        const name = get('name')||get('client');
+        if (!name) { skipped++; continue; }
+
+        // Parse dates: "Dates (all)" field uses | separator, fallback to "first date" or "date"
+        let dates = [];
+        const datesAll = get('dates');
+        if (datesAll) {
+          dates = datesAll.split(/[|,;]/).map(d=>d.trim()).filter(Boolean);
+        } else {
+          const d = get('first date')||get('date');
+          if (d) dates = [d];
+        }
+
+        const price   = parseFloat(get('price'))||0;
+        const deposit = parseFloat(get('deposit'))||price*0.5;
+        const balance = parseFloat(get('balance'))||price*0.5;
+        const initials = name.split(' ').filter(Boolean).map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+        clientsData.unshift({
+          id: Date.now() + i,
+          name, initials,
+          phone: get('phone'),
+          area:  get('area')||get('location'),
+          housenumber: get('house')||get('villa'),
+          maps: get('maps')||get('map'),
+          svcType:  get('service type')||get('service')||'Deep Cleaning',
+          duration: get('duration')||'Full Day',
+          lang:     get('language')||get('lang')||'English',
+          dates,
+          priceLines: [],
+          price, deposit, balance,
+          depositPaid: (get('deposit paid')||'').toLowerCase()==='yes',
+          balancePaid: (get('balance paid')||'').toLowerCase()==='yes',
+          isOvertime:  (get('overtime')||'').toLowerCase()==='yes',
+          otHours: parseFloat(get('ot hours')||get('overtime hours'))||0,
+          otRate:  parseFloat(get('ot rate')||get('overtime rate'))||0,
+          notes:  get('notes'),
+          status: get('status')||'Service Day',
+          reminders: REMINDER_LABELS.map(()=>({sent:false})),
+          proposals: []
         });
         imported++;
       }
       renderClients();
-      alert(`✅ Successfully imported ${imported} client${imported!==1?'s':''} from ${file.name}`);
+      saveData();
+      alert(`✅ Imported ${imported} booking${imported!==1?'s':''}${skipped?` (${skipped} rows skipped — no name)`:''} from ${file.name}\n\nAll clients are now visible in the CRM.`);
       input.value='';
     };
-    reader.readAsText(file);
+    reader.readAsText(file, 'UTF-8');
   }
 
   // ════════════════════════════════════════════
