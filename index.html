@@ -1989,8 +1989,9 @@
   }
 
   function updateBooking() {
+    try {
     const c = clientsData.find(x=>x.id===editingClientId);
-    if (!c) return;
+    if (!c) { alert('❌ Error: No booking selected for editing. Please close and re-open the edit form.'); return; }
     c.name        = document.getElementById('f-name').value.trim() || c.name;
     c.phone       = document.getElementById('f-phone').value.trim();
     c.area        = document.getElementById('f-area').value.trim();
@@ -2019,6 +2020,10 @@
     if (document.getElementById('page-calendar')?.style.display !== 'none') renderCalendar();
     alert(`✅ ${c.name}'s booking has been updated.`);
     clearForm();
+    } catch(err) {
+      alert('❌ Save failed: ' + err.message + '\n\nPlease screenshot this and report it.');
+      console.error('updateBooking error:', err);
+    }
   }
 
   function cancelEdit() {
