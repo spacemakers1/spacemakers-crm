@@ -1575,7 +1575,10 @@
     const personalEntries = JSON.parse(localStorage.getItem('sm_cal_personal') || '[]');
     const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const todayStr = new Date().toISOString().slice(0,10);
+    // Use LOCAL date (not UTC) to avoid timezone shift in Qatar (UTC+3)
+    const localDateStr = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const now = new Date();
+    const todayStr = localDateStr(now);
     const accentColor = localStorage.getItem('sm_cal_accent') || '#c9768a';
 
     // Build 14-day window (2 weeks)
@@ -1604,7 +1607,7 @@
       })();
 
       const dayCells = weekDays.map(d => {
-        const dateStr = d.toISOString().slice(0,10);
+        const dateStr = localDateStr(d);
         const isToday = dateStr === todayStr;
         const bookings = clientsData.filter(c => c.dates && c.dates.includes(dateStr));
         const personal = personalEntries.filter(e => e.date === dateStr);
